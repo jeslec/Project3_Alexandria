@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="30dp"
+        android:gravity="center"
+        android:background="#00ff00">
+
+        <EditText
+            android:id="@+id/isbn_editText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:maxLength="13"
+            android:background="#ff0000"
+            android:elegantTextHeight="false"
+            android:minHeight="30dp"/>
+
+        <ImageButton
+            android:id="@+id/clear_isbn_imageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/ic_delete"/>
+
+        <ImageButton
+            android:id="@+id/scan_isbn_imageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/ic_menu_camera"/>
+    </LinearLayout>
+
+</LinearLayout>
