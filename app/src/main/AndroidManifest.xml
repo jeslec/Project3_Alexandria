@@ -28,6 +28,11 @@
                 android:value=".BookListActivity" />
         </activity>
         <activity
+            android:name=".AddBookActivity"
+            android:label="@string/add_book_title"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
+        <activity
             android:name=".AboutActivity"
             android:label="@string/about_title"
             android:theme="@style/AppTheme.NoActionBar" >

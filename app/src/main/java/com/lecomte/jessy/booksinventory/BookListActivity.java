@@ -3,6 +3,7 @@ package com.lecomte.jessy.booksinventory;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -126,6 +127,28 @@ public class BookListActivity extends AppCompatActivity
             return true;
         } else if (id == R.id.action_add_book) {
             Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
+            if (mTwoPane) {
+                AddBookFragment fragment = null;
+                FragmentManager fragMgr = getSupportFragmentManager();
+                fragment = (AddBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+
+                FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
+
+                if (fragment == null) {
+                    Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
+                    fragment = AddBookFragment.newInstance(mTwoPane);
+                    fragmentTransaction.add(fragment, AddBookFragment.TAG);
+                } else {
+                    Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
+                    fragmentTransaction.remove(fragment)
+                            .add(fragment, AddBookFragment.TAG);
+                }
+                fragmentTransaction.commit();
+            } else {
+                Intent intent = new Intent(this, AddBookActivity.class);
+                intent.putExtra(AddBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
+                startActivity(intent);
+            }
             return true;
         } else if (id == R.id.action_delete_book) {
             // Get position of currently selected book in list
@@ -168,4 +191,12 @@ public class BookListActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
+
+   /* public void SetAlert(Class<?> class){
+        Object obj = class.newInstance();
+        if(obj isInstanceOf RedAlert){
+            RedAlert ra= (RedAlert)obj;
+        }
+        ...
+    }*/
 }
