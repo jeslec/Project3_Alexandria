@@ -117,6 +117,9 @@ public class BookListActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.action_add_book) {
+            Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
