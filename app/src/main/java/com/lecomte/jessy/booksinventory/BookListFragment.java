@@ -87,6 +87,18 @@ public class BookListFragment extends ListFragment {
                 && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+
+        // TEST: jessy
+        /*else {
+            int activatedPosition = 0;
+            getListView().setItemChecked(activatedPosition, true);
+            mActivatedPosition = activatedPosition;
+            mCallbacks.onItemSelected(DummyContent.ITEMS.get(activatedPosition).id);
+            // TEST: select/hightlight the first book in the list
+            *//*ListView booksListView = (ListView)findViewById(android.R.id.list);
+            booksListView.setItemChecked(0, true);*//*
+            //onItemSelected("0");
+        }*/
     }
 
     @Override

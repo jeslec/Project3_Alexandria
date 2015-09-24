@@ -1,5 +1,6 @@
 package com.lecomte.jessy.booksinventory;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -8,10 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 
@@ -125,7 +128,16 @@ public class BookListActivity extends AppCompatActivity
             Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.action_delete_book) {
-            Toast.makeText(this, "Delete Book", Toast.LENGTH_SHORT).show();
+            // Get position of currently selected book in list
+            ListView booksListView = (ListView)findViewById(android.R.id.list);
+            int itemIndex = booksListView.getCheckedItemPosition();
+            Log.d(TAG, "Index of selected book: " + itemIndex);
+            if (itemIndex < 0) {
+                Toast.makeText(this, "Please select book to delete from the list", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Deleting Book at index: " + itemIndex, Toast.LENGTH_SHORT).show();
+            }
+
             return true;
         } else if (id == R.id.action_about) {
             if (mTwoPane) {
