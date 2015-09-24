@@ -17,6 +17,9 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -34,6 +37,8 @@ public class AddBookFragment extends DialogFragment {
     private ImageButton mScanIsbnButton;
     private TextView mIsbnTextView;
     private TextView mBookTitleTextView;
+    private TextView mBookSubTitleTextView;
+    private TextView mAuthorTextView;
 
     public AddBookFragment() {
     }
@@ -113,13 +118,23 @@ public class AddBookFragment extends DialogFragment {
         mScanIsbnButton = (ImageButton)rootView.findViewById(R.id.scan_isbn_imageButton);
         mIsbnTextView = (TextView)rootView.findViewById(R.id.isbn_editText);
         mBookTitleTextView = (TextView)rootView.findViewById(R.id.book_title_textView);
+        mBookSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
+        mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
 
-        // Widgets event handlers
+        // Widgets events handlers
 
         mClearIsbnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 clearWidgets();
+            }
+        });
+
+        mScanIsbnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Make sure to use the code for a fragment (not the same as the code for activity)
+                IntentIntegrator.forSupportFragment(AddBookFragment.this).initiateScan();
             }
         });
 
@@ -130,6 +145,8 @@ public class AddBookFragment extends DialogFragment {
     private void clearWidgets() {
         mIsbnTextView.setText("");
         mBookTitleTextView.setText("");
+        mBookSubTitleTextView.setText("");
+        mAuthorTextView.setText("");
     }
 
     // The system calls this only when creating the layout in a dialog
@@ -171,6 +188,19 @@ public class AddBookFragment extends DialogFragment {
             // Dim behind this dialog (must be called after dialog is created and view is set)
             dialogWindow.setFlags(dimFlag, dimFlag);
             dialogWindow.setDimAmount(mDimAmount);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d(TAG, "onActivityResult()");
+        super.onActivityResult(requestCode, resultCode, data);
+        IntentResult scan = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+        if (scan != null) {
+            mIsbnTextView.setText(scan.getContents());
         }
     }
 }

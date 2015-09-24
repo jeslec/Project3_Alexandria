@@ -160,7 +160,6 @@ public class BookListActivity extends AppCompatActivity
             } else {
                 Toast.makeText(this, "Deleting Book at index: " + itemIndex, Toast.LENGTH_SHORT).show();
             }
-
             return true;
         } else if (id == R.id.action_about) {
             if (mTwoPane) {
@@ -185,7 +184,6 @@ public class BookListActivity extends AppCompatActivity
                 intent.putExtra(AboutFragment.EXTRA_BOOL_2PANE, mTwoPane);
                 startActivity(intent);
             }
-
             return true;
         }
 
