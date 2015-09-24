@@ -120,6 +120,9 @@ public class BookListActivity extends AppCompatActivity
         } else if (id == R.id.action_add_book) {
             Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.action_about) {
+            Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
