@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">BooksInventory</string>
+    <string name="app_name">Alexandria</string>
     <string name="title_book_detail">Book Detail</string>
 
     <!-- Action menu options -->
     <string name="action_settings">Settings</string>
     <string name="action_add_book">Add Book</string>
+    <string name="action_delete_book">Delete Book</string>
     <string name="action_about">About</string>
 
     <!-- About screen -->
