@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -19,9 +18,9 @@ import android.view.WindowManager;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class AboutActivityFragment extends DialogFragment {
+public class AboutFragment extends DialogFragment {
 
-    public static final String TAG = AboutActivityFragment.class.getSimpleName();
+    public static final String TAG = AboutFragment.class.getSimpleName();
     public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
 
     private float mWidthMultiplier = 1;
@@ -30,13 +29,13 @@ public class AboutActivityFragment extends DialogFragment {
 
     private boolean mTwoPaneLayout;
 
-    public AboutActivityFragment() {
+    public AboutFragment() {
     }
 
-    public static AboutActivityFragment newInstance(boolean twoPane) {
+    public static AboutFragment newInstance(boolean twoPane) {
         Bundle args = new Bundle();
         args.putBoolean(EXTRA_BOOL_2PANE, twoPane);
-        AboutActivityFragment fragment = new AboutActivityFragment();
+        AboutFragment fragment = new AboutFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -98,6 +97,10 @@ public class AboutActivityFragment extends DialogFragment {
 
         Log.d(TAG, "onCreateView()");
         View v = inflater.inflate(R.layout.fragment_about, container, false);
+
+        // Hide this dialog's custom title if we are in the 1-pane scenario
+        int visibility = mTwoPaneLayout? View.VISIBLE : View.GONE;
+        v.findViewById(R.id.about_title_frame).setVisibility(visibility);
 
         return v;
     }

@@ -129,25 +129,25 @@ public class BookListActivity extends AppCompatActivity
                 Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
 
                 if (mTwoPane) {
-                    AboutActivityFragment fragment = null;
+                    AboutFragment fragment = null;
                     FragmentManager fragMgr = getSupportFragmentManager();
-                    fragment = (AboutActivityFragment) fragMgr.findFragmentByTag(AboutActivityFragment.TAG);
+                    fragment = (AboutFragment) fragMgr.findFragmentByTag(AboutFragment.TAG);
 
                     FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
 
                     if (fragment == null) {
                         Log.d(TAG, "AboutActivityFragment not found, creating a new one and putting it in layout");
-                        fragment = AboutActivityFragment.newInstance(mTwoPane);
-                        fragmentTransaction.add(fragment, AboutActivityFragment.TAG);
+                        fragment = AboutFragment.newInstance(mTwoPane);
+                        fragmentTransaction.add(fragment, AboutFragment.TAG);
                     } else {
                         Log.d(TAG, "AboutActivityFragment found, putting it in layout...");
                         fragmentTransaction.remove(fragment)
-                                .add(fragment, AboutActivityFragment.TAG);
+                                .add(fragment, AboutFragment.TAG);
                     }
                     fragmentTransaction.commit();
                 } else {
                     Intent intent = new Intent(this, AboutActivity.class);
-                    intent.putExtra(AboutActivityFragment.EXTRA_BOOL_2PANE, mTwoPane);
+                    intent.putExtra(AboutFragment.EXTRA_BOOL_2PANE, mTwoPane);
                     startActivity(intent);
                 }
 

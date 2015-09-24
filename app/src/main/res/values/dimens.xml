@@ -7,8 +7,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- Size of music player window expressed as fraction (0.0-1.0) of max screen width -->
-    <item name="about_dialog_window_width" format="float" type="dimen">0.6</item>
-    <item name="about_dialog_window_height" format="float" type="dimen">0.6</item>
+    <item name="about_dialog_window_width" format="float" type="dimen">0.4</item>
+    <item name="about_dialog_window_height" format="float" type="dimen">0.3</item>
 
     <!-- Behind music player dim amount [0.0: no dimming; 1.0: full dimming] -->
     <item name="about_dialog_dim_behind_amount" format="float" type="dimen">0.6</item>
