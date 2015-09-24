@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -16,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -39,6 +42,7 @@ public class AddBookFragment extends DialogFragment {
     private TextView mBookTitleTextView;
     private TextView mBookSubTitleTextView;
     private TextView mAuthorTextView;
+    private String mPreviousIsbn = "";
 
     public AddBookFragment() {
     }
@@ -55,6 +59,8 @@ public class AddBookFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
 
         Bundle fragmentArguments = getArguments();
         Intent intent = getActivity().getIntent();
@@ -138,6 +144,33 @@ public class AddBookFragment extends DialogFragment {
             }
         });
 
+        mIsbnTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                Log.d(TAG, "afterTextChanged(): " + editable + " [Length: " + editable.length() + "]");
+                String isbn = editable.toString();
+
+                if (isbn.length() < 13 || isbn.equals(mPreviousIsbn)) {
+                    return;
+                }
+
+                Toast.makeText(getActivity(), "Downloading book data for ISBN: " + isbn,
+                        Toast.LENGTH_LONG).show();
+                //sendLoadBookCommandToService(ean);
+                mPreviousIsbn = isbn;
+            }
+        });
+
         return rootView;
     }
 
@@ -147,6 +180,7 @@ public class AddBookFragment extends DialogFragment {
         mBookTitleTextView.setText("");
         mBookSubTitleTextView.setText("");
         mAuthorTextView.setText("");
+        mPreviousIsbn = "";
     }
 
     // The system calls this only when creating the layout in a dialog
@@ -202,5 +236,15 @@ public class AddBookFragment extends DialogFragment {
         if (scan != null) {
             mIsbnTextView.setText(scan.getContents());
         }
+    }
+
+    //http://stackoverflow.com/questions/12433397/android-dialogfragment-disappears-after-orientation-change#12434038
+    // Whitout this code, the fragment disapears when there's a configuration change
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
     }
 }
