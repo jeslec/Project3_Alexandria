@@ -2,10 +2,13 @@ package com.lecomte.jessy.booksinventory;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,6 +34,7 @@ import android.widget.Toast;
 public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks {
 
+    private static final String TAG = BookListActivity.class.getSimpleName();
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -120,9 +124,35 @@ public class BookListActivity extends AppCompatActivity
         } else if (id == R.id.action_add_book) {
             Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.action_about) {
-            Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
-            return true;
+        } else {
+            if (id == R.id.action_about) {
+                Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+
+                if (mTwoPane) {
+                    AboutActivityFragment fragment = null;
+                    FragmentManager fragMgr = getSupportFragmentManager();
+                    fragment = (AboutActivityFragment) fragMgr.findFragmentByTag(AboutActivityFragment.TAG);
+
+                    FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
+
+                    if (fragment == null) {
+                        Log.d(TAG, "AboutActivityFragment not found, creating a new one and putting it in layout");
+                        fragment = AboutActivityFragment.newInstance(mTwoPane);
+                        fragmentTransaction.add(fragment, AboutActivityFragment.TAG);
+                    } else {
+                        Log.d(TAG, "AboutActivityFragment found, putting it in layout...");
+                        fragmentTransaction.remove(fragment)
+                                .add(fragment, AboutActivityFragment.TAG);
+                    }
+                    fragmentTransaction.commit();
+                } else {
+                    Intent intent = new Intent(this, AboutActivity.class);
+                    intent.putExtra(AboutActivityFragment.EXTRA_BOOL_2PANE, mTwoPane);
+                    startActivity(intent);
+                }
+
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
