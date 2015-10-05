@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:padding="6dip" >
+
+    <ImageView
+        android:id="@+id/book_list_item_Image"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="6dip" />
+
+    <TextView
+        android:id="@+id/book_list_item_Title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toRightOf="@id/book_list_item_Image"
+        android:gravity="center_vertical"
+        android:ellipsize="end"
+        android:layout_marginRight="10dp"
+        android:maxLines="1"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/book_list_item_SubTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="26dip"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/book_list_item_Image"
+        android:layout_toEndOf="@+id/book_list_item_Image"/>
+
+</RelativeLayout>

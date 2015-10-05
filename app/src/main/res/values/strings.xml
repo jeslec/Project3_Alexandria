@@ -16,4 +16,5 @@
     <!-- Add book screen -->
     <string name="add_book_title">Add Book</string>
     <string name="internet_not_available">Internet offline, book search disabled</string>
+    <string name="save_button">Save</string>
 </resources>

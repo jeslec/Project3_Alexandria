@@ -7,7 +7,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.lecomte.jessy.booksinventory.Data.BookData;
+import com.lecomte.jessy.booksinventory.Data.BookListAdapter;
+import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.dummy.DummyContent;
+
+import java.util.ArrayList;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -70,12 +75,17 @@ public class BookListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ArrayList<BookData> dummyBookDataList = new ArrayList<BookData>();
+        BookData dummyBookData = new BookData();
+        dummyBookData.setTitle("Patate poil");
+        dummyBookData.setSubTitle("Yum Yum");
+        dummyBookDataList.add(dummyBookData);
+
+        BookListAdapter mBookListAdapter = new BookListAdapter(getActivity(),
+                R.layout.book_list_item, dummyBookDataList.toArray(new BookData[]{}));
+
         // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                DummyContent.ITEMS));
+        setListAdapter(mBookListAdapter);
     }
 
     @Override

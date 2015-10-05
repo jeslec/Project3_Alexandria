@@ -1,5 +1,6 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -56,6 +58,9 @@ public class AddBookFragment extends DialogFragment {
     private String mPreviousIsbn = "";
 
     private BookServiceResult mBookServiceResult;
+    private Button mSaveButton;
+    private BookData mBookData = new BookData();
+    private onBookAddedListener mBookAddedListener;
 
     public AddBookFragment() {
     }
@@ -79,8 +84,15 @@ public class AddBookFragment extends DialogFragment {
                 if(Patterns.WEB_URL.matcher(bookEntry.getImageUrl()).matches()){
                     new DownloadImage(mBookImage).execute(bookEntry.getImageUrl());
                 }
+
+                mSaveButton.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    // Container Activity must implement this interface
+    public interface onBookAddedListener {
+        public void onBookAdded(BookData data);
     }
 
     public class BookServiceResult extends ResultReceiver {
@@ -102,13 +114,33 @@ public class AddBookFragment extends DialogFragment {
             super.onReceiveResult(resultCode, resultData);
 
             String result = resultData.getString("BOOK_SERVICE_RESULT");
-            BookData bookEntry = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
+            mBookData = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
 
-            updateUI(bookEntry);
+            updateUI(mBookData);
 
             Log.d(TAG, "onReceiveResult() - Data received from service: " + result);
             //Toast.makeText(this, "Received: " + result, Toast.LENGTH_LONG);
         }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Activities containing this fragment must implement its callbacks.
+        if (!(activity instanceof onBookAddedListener)) {
+            throw new IllegalStateException("Activity must implement fragment's callbacks.");
+        }
+
+        mBookAddedListener = (onBookAddedListener) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        //
+        mBookAddedListener = null;
     }
 
     @Override
@@ -185,6 +217,7 @@ public class AddBookFragment extends DialogFragment {
         mBookSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
         mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
         mBookImage = (ImageView)rootView.findViewById(R.id.book_image);
+        mSaveButton = (Button)rootView.findViewById(R.id.save_button);
 
         // Widgets events handlers
 
@@ -200,6 +233,18 @@ public class AddBookFragment extends DialogFragment {
             public void onClick(View view) {
                 // Make sure to use the code for a fragment (not the same as the code for activity)
                 IntentIntegrator.forSupportFragment(AddBookFragment.this).initiateScan();
+            }
+        });
+
+        mSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Saving...", Toast.LENGTH_SHORT).show();
+
+                // Send book data to Main view so it gets loaded in the list view
+                if (mBookData != null && mBookAddedListener != null) {
+                    mBookAddedListener.onBookAdded(mBookData);
+                }
             }
         });
 
@@ -260,6 +305,7 @@ public class AddBookFragment extends DialogFragment {
         mAuthorTextView.setText("");
         mPreviousIsbn = "";
         mBookImage.setVisibility(View.INVISIBLE);
+        mSaveButton.setVisibility(View.INVISIBLE);
     }
 
     // The system calls this only when creating the layout in a dialog

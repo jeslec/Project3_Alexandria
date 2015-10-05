@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.lecomte.jessy.booksinventory.Data.BookData;
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
@@ -43,7 +44,8 @@ import com.lecomte.jessy.booksinventory.R;
  * to listen for item selections.
  */
 public class BookListActivity extends AppCompatActivity
-        implements BookListFragment.Callbacks {
+        implements BookListFragment.Callbacks,
+        AddBookFragment.onBookAddedListener {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
 
@@ -92,14 +94,19 @@ public class BookListActivity extends AppCompatActivity
         }
 
         // Register to receive messages from the BookService
-        mMessageReceiver = new MessageReciever();
+        mMessageReceiver = new MessageReceiver();
         IntentFilter filter = new IntentFilter(MESSAGE_EVENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 
         // TODO: If exposing deep links into your app, handle intents here.
     }
 
-    private class MessageReciever extends BroadcastReceiver {
+    @Override
+    public void onBookAdded(BookData data) {
+        Toast.makeText(this, "Book list received: " + data.getTitle(), Toast.LENGTH_SHORT);
+    }
+
+    private class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getStringExtra(MESSAGE_KEY)!=null){
@@ -218,12 +225,4 @@ public class BookListActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
-
-   /* public void SetAlert(Class<?> class){
-        Object obj = class.newInstance();
-        if(obj isInstanceOf RedAlert){
-            RedAlert ra= (RedAlert)obj;
-        }
-        ...
-    }*/
 }

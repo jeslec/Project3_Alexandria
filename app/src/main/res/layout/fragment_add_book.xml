@@ -72,7 +72,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:weightSum="100">
+            android:weightSum="100"
+            android:layout_gravity="center_vertical">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -92,7 +93,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:layout_weight="60">
+                android:layout_weight="60"
+                android:layout_gravity="center">
 
                 <TextView
                     android:id="@+id/book_title_textView"
@@ -111,6 +113,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="James Dean"/>
+
+                <Button
+                    android:id="@+id/save_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/save_button"/>
 
             </LinearLayout>
 
