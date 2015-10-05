@@ -5,7 +5,7 @@
                 android:orientation="vertical"
                 android:id="@+id/about_fragment_container"
                 tools:showIn="@layout/activity_about"
-                tools:context="com.lecomte.jessy.booksinventory.AboutFragment"
+                tools:context="com.lecomte.jessy.booksinventory.Fragments.AboutFragment"
                 android:background="#ffffff">
 
     <!-- Dialog title -->

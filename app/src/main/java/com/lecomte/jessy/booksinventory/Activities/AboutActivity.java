@@ -1,4 +1,4 @@
-package com.lecomte.jessy.booksinventory.dummy;
+package com.lecomte.jessy.booksinventory.Activities;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -9,7 +9,7 @@ import android.view.View;
 
 import com.lecomte.jessy.booksinventory.R;
 
-public class AddBookActivity extends AppCompatActivity {
+public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

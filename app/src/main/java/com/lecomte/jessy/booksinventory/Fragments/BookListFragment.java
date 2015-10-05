@@ -1,4 +1,4 @@
-package com.lecomte.jessy.booksinventory;
+package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;

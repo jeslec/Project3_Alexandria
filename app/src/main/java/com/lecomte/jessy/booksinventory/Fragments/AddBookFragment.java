@@ -1,8 +1,10 @@
-package com.lecomte.jessy.booksinventory;
+package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -10,6 +12,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +20,18 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.lecomte.jessy.booksinventory.BuildConfig;
+import com.lecomte.jessy.booksinventory.Data.BookData;
+import com.lecomte.jessy.booksinventory.Other.Utility;
+import com.lecomte.jessy.booksinventory.R;
+import com.lecomte.jessy.booksinventory.Services.BookService;
+import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -42,7 +52,10 @@ public class AddBookFragment extends DialogFragment {
     private TextView mBookTitleTextView;
     private TextView mBookSubTitleTextView;
     private TextView mAuthorTextView;
+    private ImageView mBookImage;
     private String mPreviousIsbn = "";
+
+    private BookServiceResult mBookServiceResult;
 
     public AddBookFragment() {
     }
@@ -53,6 +66,49 @@ public class AddBookFragment extends DialogFragment {
         AddBookFragment fragment = new AddBookFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private void updateUI(final BookData bookEntry) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mBookTitleTextView.setText(bookEntry.getTitle());
+                mBookSubTitleTextView.setText(bookEntry.getSubTitle());
+                mAuthorTextView.setText(bookEntry.getAuthors());
+
+                if(Patterns.WEB_URL.matcher(bookEntry.getImageUrl()).matches()){
+                    new DownloadImage(mBookImage).execute(bookEntry.getImageUrl());
+                }
+            }
+        });
+    }
+
+    public class BookServiceResult extends ResultReceiver {
+        private final String TAG = BookServiceResult.class.getSimpleName();
+
+        /**
+         * Create a new ResultReceive to receive results.  Your
+         * {@link #onReceiveResult} method will be called from the thread running
+         * <var>handler</var> if given, or from an arbitrary thread if null.
+         *
+         * @param handler
+         */
+        public BookServiceResult(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+
+            String result = resultData.getString("BOOK_SERVICE_RESULT");
+            BookData bookEntry = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
+
+            updateUI(bookEntry);
+
+            Log.d(TAG, "onReceiveResult() - Data received from service: " + result);
+            //Toast.makeText(this, "Received: " + result, Toast.LENGTH_LONG);
+        }
     }
 
     @Override
@@ -101,6 +157,8 @@ public class AddBookFragment extends DialogFragment {
             mHeightMultiplier = height.getFloat();
             mDimAmount = dim.getFloat();
         }
+
+        mBookServiceResult = new BookServiceResult(null);
     }
 
     // See section: Showing a Dialog Fullscreen or as an Embedded Fragment from
@@ -126,6 +184,7 @@ public class AddBookFragment extends DialogFragment {
         mBookTitleTextView = (TextView)rootView.findViewById(R.id.book_title_textView);
         mBookSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
         mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
+        mBookImage = (ImageView)rootView.findViewById(R.id.book_image);
 
         // Widgets events handlers
 
@@ -166,12 +225,31 @@ public class AddBookFragment extends DialogFragment {
 
                 Toast.makeText(getActivity(), "Downloading book data for ISBN: " + isbn,
                         Toast.LENGTH_LONG).show();
-                //sendLoadBookCommandToService(ean);
+
+                sendLoadBookCommandToService(isbn);
                 mPreviousIsbn = isbn;
             }
         });
 
         return rootView;
+    }
+
+    private void sendLoadBookCommandToService(String isbn) {
+
+        // BUG FIX: Prevent app from crashing when internet is not available
+        if (!Utility.isInternetAvailable(getActivity())) {
+            Toast.makeText(getActivity(), R.string.internet_not_available,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Intent bookIntent = new Intent(getActivity(), BookService.class);
+        bookIntent.putExtra(BookService.EAN, isbn);
+        bookIntent.putExtra(BookService.EXTRA_RESULT_OBJECT, mBookServiceResult);
+        bookIntent.setAction(BookService.FETCH_BOOK);
+        Log.d(TAG, "sendLoadBookCommandToService() - Starting BookService with command FETCH_BOOK");
+        getActivity().startService(bookIntent);
+        //AddBookFragment.this.restartLoader();
     }
 
     // Clear search field and result widgets
@@ -181,6 +259,7 @@ public class AddBookFragment extends DialogFragment {
         mBookSubTitleTextView.setText("");
         mAuthorTextView.setText("");
         mPreviousIsbn = "";
+        mBookImage.setVisibility(View.INVISIBLE);
     }
 
     // The system calls this only when creating the layout in a dialog

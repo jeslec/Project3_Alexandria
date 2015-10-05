@@ -1,4 +1,4 @@
-package com.lecomte.jessy.booksinventory;
+package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.lecomte.jessy.booksinventory.Activities.BookDetailActivity;
+import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
+import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.dummy.DummyContent;
 
 /**

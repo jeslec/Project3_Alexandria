@@ -1,4 +1,4 @@
-package com.lecomte.jessy.booksinventory;
+package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.lecomte.jessy.booksinventory.BuildConfig;
+import com.lecomte.jessy.booksinventory.R;
 
 /**
  * A placeholder fragment containing a simple view.

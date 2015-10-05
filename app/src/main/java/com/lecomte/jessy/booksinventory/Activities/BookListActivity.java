@@ -1,22 +1,29 @@
-package com.lecomte.jessy.booksinventory;
+package com.lecomte.jessy.booksinventory.Activities;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
+import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
+import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
+import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
+import com.lecomte.jessy.booksinventory.R;
 
 
 /**
@@ -39,6 +46,13 @@ public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
+
+    // Messages received by the BookService intent
+    public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
+    public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
+
+    private BroadcastReceiver mMessageReceiver;
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -77,7 +91,22 @@ public class BookListActivity extends AppCompatActivity
                     .setActivateOnItemClick(true);
         }
 
+        // Register to receive messages from the BookService
+        mMessageReceiver = new MessageReciever();
+        IntentFilter filter = new IntentFilter(MESSAGE_EVENT);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+
         // TODO: If exposing deep links into your app, handle intents here.
+    }
+
+    private class MessageReciever extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra(MESSAGE_KEY)!=null){
+                Toast.makeText(BookListActivity.this, intent.getStringExtra(MESSAGE_KEY),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     /**
