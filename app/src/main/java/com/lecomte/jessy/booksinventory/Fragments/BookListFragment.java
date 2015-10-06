@@ -1,19 +1,18 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.lecomte.jessy.booksinventory.Data.BookData;
-import com.lecomte.jessy.booksinventory.Data.BookListAdapter;
-import com.lecomte.jessy.booksinventory.R;
+import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
+import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
 import com.lecomte.jessy.booksinventory.dummy.DummyContent;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -24,7 +23,10 @@ import java.util.Arrays;
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class BookListFragment extends ListFragment {
+public class BookListFragment extends ListFragment
+        implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private final int LOADER_ID = 10;
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -45,8 +47,44 @@ public class BookListFragment extends ListFragment {
 
     private BookListAdapter mBookListAdapter;
 
-    public void addToListView(BookData data) {
-        mBookListAdapter.add(data);
+    public void reloadListItems() {
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        return new CursorLoader(
+                getActivity(),
+                AlexandriaContract.BookEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        //Log.d(TAG, "onLoadFinished()");
+
+        if (mBookListAdapter == null) {
+            mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
+            setListAdapter(mBookListAdapter);
+        }
+
+        else {
+            mBookListAdapter.swapCursor(data);
+        }
+
+        /*if (position != ListView.INVALID_POSITION) {
+            bookList.smoothScrollToPosition(position);
+        }*/
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mBookListAdapter.swapCursor(null);
     }
 
     /**
@@ -82,13 +120,8 @@ public class BookListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mBookListAdapter = new BookListAdapter(getActivity(), R.layout.book_list_item,
-                new ArrayList<BookData>());
-
-        setListAdapter(mBookListAdapter);
-
         // Keep list items in list after a config change (e.g. screen/device rotation)
-        setRetainInstance(true);
+        //setRetainInstance(true);
     }
 
     @Override
@@ -100,6 +133,8 @@ public class BookListFragment extends ListFragment {
                 && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+
+        getLoaderManager().initLoader(LOADER_ID, null, this);
 
         // TEST: jessy
         /*else {

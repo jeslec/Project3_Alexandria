@@ -35,8 +35,6 @@ import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
-import org.w3c.dom.Text;
-
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -97,7 +95,7 @@ public class AddBookFragment extends DialogFragment {
 
     // Container Activity must implement this interface
     public interface onBookAddedListener {
-        public void onBookAdded(BookData data);
+        public void onBookAddedToDatabase();
     }
 
     public class BookServiceResult extends ResultReceiver {
@@ -266,8 +264,8 @@ public class AddBookFragment extends DialogFragment {
                 Toast.makeText(getActivity(), "Saving...", Toast.LENGTH_SHORT).show();
 
                 // Send book data to Main view so it gets loaded in the list view
-                if (mBookData != null && mBookAddedListener != null) {
-                    mBookAddedListener.onBookAdded(mBookData);
+                if (mBookAddedListener != null) {
+                    mBookAddedListener.onBookAddedToDatabase();
                 }
             }
         });
@@ -291,9 +289,6 @@ public class AddBookFragment extends DialogFragment {
                 if (isbn.length() < 13 || isbn.equals(mPreviousIsbn)) {
                     return;
                 }
-
-                /*Toast.makeText(getActivity(), "Downloading book data for ISBN: " + isbn,
-                        Toast.LENGTH_LONG).show();*/
 
                 sendLoadBookCommandToService(isbn);
                 mPreviousIsbn = isbn;

@@ -19,7 +19,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.lecomte.jessy.booksinventory.Data.BookData;
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
@@ -102,8 +101,8 @@ public class BookListActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBookAdded(BookData data) {
-        Toast.makeText(this, "Book list received: " + data.getTitle(), Toast.LENGTH_SHORT);
+    public void onBookAddedToDatabase() {
+        //Toast.makeText(this, "Book list received: " + data.getTitle(), Toast.LENGTH_SHORT);
 
         BookListFragment bookListFragment = (BookListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.book_list);
@@ -112,7 +111,7 @@ public class BookListActivity extends AppCompatActivity
             // If article frag is available, we're in two-pane layout...
 
             // Call a method in the ArticleFragment to update its content
-            bookListFragment.addToListView(data);
+            bookListFragment.reloadListItems();
         }
     }
 

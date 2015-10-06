@@ -57,6 +57,8 @@ public class BookService extends IntentService {
 
         if (intent != null) {
             final String action = intent.getAction();
+
+            // Object used to send data back to the client
             mCommandResult = intent.getParcelableExtra(EXTRA_RESULT_OBJECT);
 
             if (FETCH_BOOK.equals(action)) {
