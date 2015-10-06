@@ -35,6 +35,8 @@ import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
+import org.w3c.dom.Text;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -61,6 +63,8 @@ public class AddBookFragment extends DialogFragment {
     private Button mSaveButton;
     private BookData mBookData = new BookData();
     private onBookAddedListener mBookAddedListener;
+    private int mAddBookResultCode = -1;
+    private TextView mBookInDbTextView;
 
     public AddBookFragment() {
     }
@@ -81,11 +85,12 @@ public class AddBookFragment extends DialogFragment {
                 mBookSubTitleTextView.setText(bookEntry.getSubTitle());
                 mAuthorTextView.setText(bookEntry.getAuthors());
 
-                if(Patterns.WEB_URL.matcher(bookEntry.getImageUrl()).matches()){
+                if (bookEntry.getImageUrl() != null && Patterns.WEB_URL.matcher(bookEntry.getImageUrl()).matches()){
                     new DownloadImage(mBookImage).execute(bookEntry.getImageUrl());
                 }
 
-                mSaveButton.setVisibility(View.VISIBLE);
+                //mSaveButton.setVisibility(View.VISIBLE);
+                showSaveButton(mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_DOWNLOADED);
             }
         });
     }
@@ -113,14 +118,32 @@ public class AddBookFragment extends DialogFragment {
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             super.onReceiveResult(resultCode, resultData);
 
-            String result = resultData.getString("BOOK_SERVICE_RESULT");
-            mBookData = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
+            mAddBookResultCode = resultData.getInt(BookService.EXTRA_RESULT_CODE);
 
-            updateUI(mBookData);
+            // If book found or downloaded, display book data
+            if (mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_IN_DB ||
+                    mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_DOWNLOADED) {
 
-            Log.d(TAG, "onReceiveResult() - Data received from service: " + result);
+                mBookData = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
+
+                if (mBookData != null) {
+                    updateUI(mBookData);
+                }
+            }
+
+            //Log.d(TAG, "onReceiveResult() - Data received from service: " + result);
             //Toast.makeText(this, "Received: " + result, Toast.LENGTH_LONG);
         }
+    }
+
+    private void showSaveButton(boolean bShow) {
+        if (bShow) {
+            mSaveButton.setVisibility(View.VISIBLE);
+            mBookInDbTextView.setVisibility(View.INVISIBLE);
+            return;
+        }
+        mSaveButton.setVisibility(View.INVISIBLE);
+        mBookInDbTextView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -218,6 +241,7 @@ public class AddBookFragment extends DialogFragment {
         mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
         mBookImage = (ImageView)rootView.findViewById(R.id.book_image);
         mSaveButton = (Button)rootView.findViewById(R.id.save_button);
+        mBookInDbTextView = (TextView)rootView.findViewById(R.id.book_in_db);
 
         // Widgets events handlers
 
@@ -268,13 +292,15 @@ public class AddBookFragment extends DialogFragment {
                     return;
                 }
 
-                Toast.makeText(getActivity(), "Downloading book data for ISBN: " + isbn,
-                        Toast.LENGTH_LONG).show();
+                /*Toast.makeText(getActivity(), "Downloading book data for ISBN: " + isbn,
+                        Toast.LENGTH_LONG).show();*/
 
                 sendLoadBookCommandToService(isbn);
                 mPreviousIsbn = isbn;
             }
         });
+
+        clearWidgets();
 
         return rootView;
     }
@@ -306,6 +332,7 @@ public class AddBookFragment extends DialogFragment {
         mPreviousIsbn = "";
         mBookImage.setVisibility(View.INVISIBLE);
         mSaveButton.setVisibility(View.INVISIBLE);
+        mBookInDbTextView.setVisibility(View.INVISIBLE);
     }
 
     // The system calls this only when creating the layout in a dialog

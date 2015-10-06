@@ -104,6 +104,16 @@ public class BookListActivity extends AppCompatActivity
     @Override
     public void onBookAdded(BookData data) {
         Toast.makeText(this, "Book list received: " + data.getTitle(), Toast.LENGTH_SHORT);
+
+        BookListFragment bookListFragment = (BookListFragment)
+                getSupportFragmentManager().findFragmentById(R.id.book_list);
+
+        if (bookListFragment != null) {
+            // If article frag is available, we're in two-pane layout...
+
+            // Call a method in the ArticleFragment to update its content
+            bookListFragment.addToListView(data);
+        }
     }
 
     private class MessageReceiver extends BroadcastReceiver {

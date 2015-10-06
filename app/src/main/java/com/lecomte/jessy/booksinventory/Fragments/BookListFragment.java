@@ -13,6 +13,7 @@ import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.dummy.DummyContent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -41,6 +42,12 @@ public class BookListFragment extends ListFragment {
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
+
+    private BookListAdapter mBookListAdapter;
+
+    public void addToListView(BookData data) {
+        mBookListAdapter.add(data);
+    }
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -75,17 +82,13 @@ public class BookListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ArrayList<BookData> dummyBookDataList = new ArrayList<BookData>();
-        BookData dummyBookData = new BookData();
-        dummyBookData.setTitle("Patate poil");
-        dummyBookData.setSubTitle("Yum Yum");
-        dummyBookDataList.add(dummyBookData);
+        mBookListAdapter = new BookListAdapter(getActivity(), R.layout.book_list_item,
+                new ArrayList<BookData>());
 
-        BookListAdapter mBookListAdapter = new BookListAdapter(getActivity(),
-                R.layout.book_list_item, dummyBookDataList.toArray(new BookData[]{}));
-
-        // TODO: replace with a real list adapter.
         setListAdapter(mBookListAdapter);
+
+        // Keep list items in list after a config change (e.g. screen/device rotation)
+        setRetainInstance(true);
     }
 
     @Override

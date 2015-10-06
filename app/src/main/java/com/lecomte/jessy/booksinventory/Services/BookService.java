@@ -37,9 +37,15 @@ public class BookService extends IntentService {
     public static final String EXTRA_RESULT_OBJECT = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_OBJECT";
     public static final String EXTRA_RESULT_DATA = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_DATA";
 
+    public static final String EXTRA_RESULT_CODE = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_CODE";
+    public static final int EXTRA_RESULT_BOOK_NOT_FOUND  = 1;
+    public static final int EXTRA_RESULT_BOOK_IN_DB      = 2;
+    public static final int EXTRA_RESULT_BOOK_DOWNLOADED = 3;
+
     public static final String EAN = "it.jaschke.alexandria.services.extra.EAN";
 
     private ResultReceiver mCommandResult;
+    private BookData mBookData = new BookData();
 
     public BookService() {
         super("Alexandria");
@@ -75,6 +81,18 @@ public class BookService extends IntentService {
             getContentResolver().delete(AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)), null, null);
         }
     }
+    
+    private BookData cursorToBookData(Cursor cursor) {
+        BookData bookInfo = new BookData();
+        bookInfo.setDescription(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.DESC)));
+        bookInfo.setTitle(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE)));
+        bookInfo.setSubTitle(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE)));
+
+        bookInfo.setImageUrl(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL)));
+        bookInfo.setAuthors(cursor.getString(cursor.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR)));
+        bookInfo.setCategories(cursor.getString(cursor.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY)));
+        return bookInfo;
+    }
 
     /**
      * Handle action fetchBook in the provided background thread with the provided
@@ -96,23 +114,13 @@ public class BookService extends IntentService {
                 null  // sort order
         );
 
-        if(bookCursor.getCount()>0){
+        if (bookCursor.getCount() > 0) {
             Log.d(TAG, "fetchBook() - No need to download, this book is already in the database");
 
             if (bookCursor.moveToFirst()) {
-                // TEST
-                BookData bookInfo = new BookData();
-                bookInfo.setDescription(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.BookEntry.DESC)));
-                bookInfo.setTitle(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE)));
-                bookInfo.setSubTitle(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE)));
-
-                bookInfo.setImageUrl(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL)));
-                bookInfo.setAuthors(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR)));
-                bookInfo.setCategories(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY)));
-                //bookInfo.setId(bookCursor.getString(bookCursor.getColumnIndex(AlexandriaContract.BookEntry._ID)));
-
+                BookData bookInfo = cursorToBookData(bookCursor);
                 Bundle data = new Bundle();
-                data.putString("BOOK_SERVICE_RESULT", "Good");
+                data.putInt(EXTRA_RESULT_CODE, EXTRA_RESULT_BOOK_IN_DB);
                 data.putParcelable(BookService.EXTRA_RESULT_DATA, bookInfo);
                 mCommandResult.send(0, data);
             }
@@ -173,7 +181,6 @@ public class BookService extends IntentService {
                     Log.e(TAG, "Error closing stream", e);
                 }
             }
-
         }
 
         final String ITEMS = "items";
@@ -195,6 +202,7 @@ public class BookService extends IntentService {
                 bookArray = bookJson.getJSONArray(ITEMS);
             } else {
                 // TODO: Jessy - Fix this
+                //EXTRA_RESULT_BOOK_NOT_FOUND
                 /*Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
                 messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.not_found));
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);*/
@@ -232,9 +240,21 @@ public class BookService extends IntentService {
         } catch (JSONException e) {
             Log.e(TAG, "Error ", e);
         }
+
+        // Book downloaded and saved to DB
+        //BookData bookInfo = cursorToBookData(bookCursor);
+        Bundle addBookResult = new Bundle();
+        addBookResult.putInt(EXTRA_RESULT_CODE, EXTRA_RESULT_BOOK_DOWNLOADED);
+        addBookResult.putParcelable(BookService.EXTRA_RESULT_DATA, mBookData);
+        mCommandResult.send(0, addBookResult);
     }
 
     private void writeBackBook(String ean, String title, String subtitle, String desc, String imgUrl) {
+        mBookData.setTitle(title);
+        mBookData.setSubTitle(subtitle);
+        mBookData.setDescription(desc);
+        mBookData.setImageUrl(imgUrl);
+
         ContentValues values= new ContentValues();
         values.put(AlexandriaContract.BookEntry._ID, ean);
         values.put(AlexandriaContract.BookEntry.TITLE, title);
