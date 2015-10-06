@@ -7,12 +7,12 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
-import com.lecomte.jessy.booksinventory.dummy.DummyContent;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -26,6 +26,7 @@ import com.lecomte.jessy.booksinventory.dummy.DummyContent;
 public class BookListFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String TAG = BookListFragment.class.getSimpleName();
     private final int LOADER_ID = 10;
 
     /**
@@ -136,6 +137,12 @@ public class BookListFragment extends ListFragment
 
         getLoaderManager().initLoader(LOADER_ID, null, this);
 
+        // TEST
+        /*if (getListView() != null) {
+            getListView().setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+            getListView().setSelector(R.drawable.book_list_item_selector);
+        }*/
+
         // TEST: jessy
         /*else {
             int activatedPosition = 0;
@@ -173,9 +180,28 @@ public class BookListFragment extends ListFragment
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
+        // TEST Jessy: highlight clicked row
+        //getListView().setItemChecked(position, true);
+        /*String title;
+        Cursor cursor = mBookListAdapter.getCursor();
+        if (cursor.moveToFirst()) {
+            title = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+            Log.d("TEST", "title: " + title);
+        }
+
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);*/
+
+        Cursor cursor = mBookListAdapter.getCursor();
+
+        if (cursor == null || !cursor.moveToPosition(position)) {
+            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+            return;
+        }
+
+        mCallbacks.onItemSelected(cursor.getString(cursor
+                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
     }
 
     @Override
