@@ -3,6 +3,8 @@ package com.lecomte.jessy.booksinventory.Fragments;
 import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
 
@@ -27,26 +30,17 @@ public class BookListFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = BookListFragment.class.getSimpleName();
+    private static final String SELECTED_ITEM_INDEX = BuildConfig.APPLICATION_ID + ".SELECTED_ITEM_INDEX";
     private final int LOADER_ID = 10;
-
-    /**
-     * The serialization (saved instance state) Bundle key representing the
-     * activated item position. Only used on tablets.
-     */
-    private static final String STATE_ACTIVATED_POSITION = "activated_position";
 
     /**
      * The fragment's current callback object, which is notified of list item
      * clicks.
      */
-    private Callbacks mCallbacks = sDummyCallbacks;
-
-    /**
-     * The current activated item position. Only used on tablets.
-     */
-    private int mActivatedPosition = ListView.INVALID_POSITION;
+    private Callbacks mCallbacks = null;
 
     private BookListAdapter mBookListAdapter;
+    private int mSelectedItemIndex = ListView.INVALID_POSITION;
 
     public void reloadListItems() {
         getLoaderManager().restartLoader(LOADER_ID, null, this);
@@ -69,18 +63,51 @@ public class BookListFragment extends ListFragment
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         //Log.d(TAG, "onLoadFinished()");
 
+        // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
         }
 
+        // Just load the new data into the books list
         else {
             mBookListAdapter.swapCursor(data);
         }
 
-        /*if (position != ListView.INVALID_POSITION) {
-            bookList.smoothScrollToPosition(position);
-        }*/
+        // The app was just started
+        if (mSelectedItemIndex == ListView.INVALID_POSITION) {
+            // The database is not empty (it has some books records)
+            if (data.getCount() > 0) {
+                // Select the first book in the list
+                mSelectedItemIndex = 0;
+
+                // Notify the details fragment to load the book data
+                // Has to be done this way or else I get an illegal state exception
+                // Apparently, it's a known bug in Android
+                // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
+
+                        if (cursor == null || !cursor.moveToPosition(mSelectedItemIndex)) {
+                            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+                            return;
+                        }
+                        mCallbacks.onItemSelected(cursor.getString(cursor
+                                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+                    }
+                });
+
+            } else {
+                return;
+            }
+        }
+
+        // Highglight/select the item that was selected before we reloaded the books list
+        getListView().setItemChecked(mSelectedItemIndex, true);
+        getListView().smoothScrollToPosition(mSelectedItemIndex);
     }
 
     @Override
@@ -101,16 +128,6 @@ public class BookListFragment extends ListFragment
     }
 
     /**
-     * A dummy implementation of the {@link Callbacks} interface that does
-     * nothing. Used only when this fragment is not attached to an activity.
-     */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
-        @Override
-        public void onItemSelected(String id) {
-        }
-    };
-
-    /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
@@ -118,42 +135,16 @@ public class BookListFragment extends ListFragment
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Keep list items in list after a config change (e.g. screen/device rotation)
-        //setRetainInstance(true);
-    }
-
-    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Restore the previously serialized activated item position.
-        if (savedInstanceState != null
-                && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
-            setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+        if (savedInstanceState != null) {
+            mSelectedItemIndex = savedInstanceState.getInt(SELECTED_ITEM_INDEX);
+            Log.d(TAG, "onViewCreated() - mSelectedItemIndex: " + mSelectedItemIndex);
+            //getListView().setItemChecked(mSelectedItemIndex, true);
         }
 
         getLoaderManager().initLoader(LOADER_ID, null, this);
-
-        // TEST
-        /*if (getListView() != null) {
-            getListView().setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-            getListView().setSelector(R.drawable.book_list_item_selector);
-        }*/
-
-        // TEST: jessy
-        /*else {
-            int activatedPosition = 0;
-            getListView().setItemChecked(activatedPosition, true);
-            mActivatedPosition = activatedPosition;
-            mCallbacks.onItemSelected(DummyContent.ITEMS.get(activatedPosition).id);
-            // TEST: select/hightlight the first book in the list
-            *//*ListView booksListView = (ListView)findViewById(android.R.id.list);
-            booksListView.setItemChecked(0, true);*//*
-            //onItemSelected("0");
-        }*/
     }
 
     @Override
@@ -173,27 +164,14 @@ public class BookListFragment extends ListFragment
         super.onDetach();
 
         // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
+        mCallbacks = null;
     }
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
-        // TEST Jessy: highlight clicked row
-        //getListView().setItemChecked(position, true);
-        /*String title;
-        Cursor cursor = mBookListAdapter.getCursor();
-        if (cursor.moveToFirst()) {
-            title = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-            Log.d("TEST", "title: " + title);
-        }
-
-        // Notify the active callbacks interface (the activity, if the
-        // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);*/
-
-        Cursor cursor = mBookListAdapter.getCursor();
+        Cursor cursor = (Cursor)listView.getItemAtPosition(position);
 
         if (cursor == null || !cursor.moveToPosition(position)) {
             Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
@@ -202,15 +180,17 @@ public class BookListFragment extends ListFragment
 
         mCallbacks.onItemSelected(cursor.getString(cursor
                 .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+
+        mSelectedItemIndex = position;
+        Log.d(TAG, "onListItemClick() - mSelectedItemIndex: " + mSelectedItemIndex);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mActivatedPosition != ListView.INVALID_POSITION) {
-            // Serialize and persist the activated item position.
-            outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
-        }
+
+        outState.putInt(SELECTED_ITEM_INDEX, mSelectedItemIndex);
+        Log.d(TAG, "onSaveInstanceState() - mSelectedItemIndex: " + mSelectedItemIndex);
     }
 
     /**
@@ -223,15 +203,5 @@ public class BookListFragment extends ListFragment
         getListView().setChoiceMode(activateOnItemClick
                 ? ListView.CHOICE_MODE_SINGLE
                 : ListView.CHOICE_MODE_NONE);
-    }
-
-    private void setActivatedPosition(int position) {
-        if (position == ListView.INVALID_POSITION) {
-            getListView().setItemChecked(mActivatedPosition, false);
-        } else {
-            getListView().setItemChecked(position, true);
-        }
-
-        mActivatedPosition = position;
     }
 }

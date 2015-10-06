@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="?android:attr/listPreferredItemHeight"
-                android:padding="6dip" >
+                android:padding="6dip"
+                android:background="?android:attr/activatedBackgroundIndicator">
 
     <ImageView
         android:id="@+id/book_list_item_Image"
@@ -20,18 +21,18 @@
         android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
         android:layout_toRightOf="@id/book_list_item_Image"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:gravity="center_vertical"
         android:ellipsize="end"
         android:layout_marginRight="10dp"
-        android:maxLines="1"
-        android:textSize="16sp" />
+        android:maxLines="1"/>
 
     <TextView
         android:id="@+id/book_list_item_SubTitle"
         android:layout_width="fill_parent"
         android:layout_height="26dip"
         android:singleLine="true"
-        android:textSize="12sp"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_marginRight="10dp"
