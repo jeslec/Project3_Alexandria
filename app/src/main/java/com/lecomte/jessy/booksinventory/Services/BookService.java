@@ -79,7 +79,7 @@ public class BookService extends IntentService {
      */
     private void deleteBook(String ean) {
         Log.d(TAG, "deleteBook() - ISBN: " + ean);
-        if(ean != null) {
+        if (ean != null) {
             getContentResolver().delete(AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)), null, null);
         }
     }

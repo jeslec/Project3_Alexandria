@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,11 +20,13 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
 import com.lecomte.jessy.booksinventory.R;
+import com.lecomte.jessy.booksinventory.Services.BookService;
 
 
 /**
@@ -195,18 +198,43 @@ public class BookListActivity extends AppCompatActivity
                 startActivity(intent);
             }
             return true;
-        } else if (id == R.id.action_delete_book) {
+        }
+
+        else if (id == R.id.action_delete_book) {
             // Get position of currently selected book in list
             ListView booksListView = (ListView)findViewById(android.R.id.list);
             int itemIndex = booksListView.getCheckedItemPosition();
-            Log.d(TAG, "Index of selected book: " + itemIndex);
-            if (itemIndex < 0) {
+            Log.d(TAG, "onOptionsItemSelected() - Index of selected book: " + itemIndex);
+
+            if (itemIndex == ListView.INVALID_POSITION) {
                 Toast.makeText(this, "Please select book to delete from the list", Toast.LENGTH_SHORT).show();
-            } else {
+            }
+
+            else {
                 Toast.makeText(this, "Deleting Book at index: " + itemIndex, Toast.LENGTH_SHORT).show();
+                Cursor cursor = (Cursor) booksListView.getItemAtPosition(itemIndex);
+
+                if (cursor == null || !cursor.moveToFirst()) {
+                    Log.d(TAG, "onOptionsItemSelected() - Cursor null or empty!");
+                    return true;
+                }
+
+                if (cursor != null) {
+                    String isbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
+
+                    // Delete selected book from database as identified by its ISBN
+                    if (isbn != null && !isbn.isEmpty()) {
+                        Intent bookIntent = new Intent(this, BookService.class);
+                        bookIntent.putExtra(BookService.EAN, isbn);
+                        bookIntent.setAction(BookService.DELETE_BOOK);
+                        startService(bookIntent);
+                    }
+                }
             }
             return true;
-        } else if (id == R.id.action_about) {
+        }
+
+        else if (id == R.id.action_about) {
             if (mTwoPane) {
                 AboutFragment fragment = null;
                 FragmentManager fragMgr = getSupportFragmentManager();

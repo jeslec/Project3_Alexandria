@@ -14,6 +14,7 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,6 +49,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     private TextView mBookSubTitle;
     private ImageView mBookImage;
     private TextView mBookDescription;
+    private Button mShareButton;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -64,7 +66,6 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         if (getArguments().containsKey(ARG_ITEM_ID)) {
 
             mItemIsbn = getArguments().getString(ARG_ITEM_ID);
-            getLoaderManager().initLoader(LOADER_ID, null, this);
 
             /*Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
@@ -72,6 +73,23 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                 appBarLayout.setTitle(mItem.content);
             }*/
         }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (mItemIsbn != null) {
+            getLoaderManager().initLoader(LOADER_ID, null, this);
+        }
+    }
+
+    private void clearWidgets() {
+        mBookTitle.setText("");
+        mBookSubTitle.setText("");
+        mBookDescription.setText("");
+        mBookImage.setVisibility(View.INVISIBLE);
+        mShareButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -83,11 +101,14 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mBookSubTitle = (TextView) rootView.findViewById(R.id.book_detail_SubTitle);
         mBookImage = (ImageView) rootView.findViewById(R.id.book_detail_Image);
         mBookDescription = (TextView) rootView.findViewById(R.id.book_detail_Description);
+        mShareButton = (Button) rootView.findViewById(R.id.book_detail_ShareButton);
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
             ((TextView) rootView.findViewById(R.id.book_detail)).setText(mItem.details);
         }
+
+        clearWidgets();
 
         return rootView;
     }

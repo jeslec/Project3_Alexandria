@@ -41,6 +41,7 @@ public class BookListFragment extends ListFragment
 
     private BookListAdapter mBookListAdapter;
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
+    private int mBooksInListCount = 0;
 
     public void reloadListItems() {
         getLoaderManager().restartLoader(LOADER_ID, null, this);
@@ -62,6 +63,8 @@ public class BookListFragment extends ListFragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         //Log.d(TAG, "onLoadFinished()");
+        boolean bBookDeleted = false;
+        boolean bBookAdded = false;
 
         // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
@@ -73,6 +76,17 @@ public class BookListFragment extends ListFragment
         else {
             mBookListAdapter.swapCursor(data);
         }
+
+        if (mBookListAdapter.getCount() < mBooksInListCount) {
+            bBookDeleted = true;
+        }
+
+        else if (mBookListAdapter.getCount() > mBooksInListCount) {
+            bBookAdded = true;
+        }
+
+        mBooksInListCount = mBookListAdapter.getCount();
+        Log.d(TAG, "Books in list: " + mBooksInListCount);
 
         // The app was just started
         if (mSelectedItemIndex == ListView.INVALID_POSITION) {
@@ -91,7 +105,7 @@ public class BookListFragment extends ListFragment
                     public void run() {
                         Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
 
-                        if (cursor == null || !cursor.moveToPosition(mSelectedItemIndex)) {
+                        if (cursor == null || !cursor.moveToFirst()) {
                             Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
                             return;
                         }
@@ -103,6 +117,61 @@ public class BookListFragment extends ListFragment
             } else {
                 return;
             }
+        }
+
+        else if (bBookDeleted) {
+            //mSelectedItemIndex = (mSelectedItemIndex - 1) == ListView.INVALID_POSITION? ListView.INVALID_POSITION: mSelectedItemIndex - 1;
+            mSelectedItemIndex = 0;
+
+            //if (mSelectedItemIndex == ListView.INVALID_POSITION) {
+            if (mBooksInListCount == 0) {
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCallbacks.onItemSelected(null);
+                    }
+                });
+            }
+
+            else {
+                // Notify the details fragment to load the book data
+                // Has to be done this way or else I get an illegal state exception
+                // Apparently, it's a known bug in Android
+                // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
+
+                        if (cursor == null || !cursor.moveToFirst()) {
+                            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+                            return;
+                        }
+                        mCallbacks.onItemSelected(cursor.getString(cursor
+                                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+                    }
+                });
+            }
+        }
+
+        else if (bBookAdded) {
+            mSelectedItemIndex = 0;
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
+
+                    if (cursor == null || !cursor.moveToFirst()) {
+                        Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+                        return;
+                    }
+                    mCallbacks.onItemSelected(cursor.getString(cursor
+                            .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+                }
+            });
         }
 
         // Highglight/select the item that was selected before we reloaded the books list
