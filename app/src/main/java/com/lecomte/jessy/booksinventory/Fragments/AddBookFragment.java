@@ -3,12 +3,16 @@ package com.lecomte.jessy.booksinventory.Fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -20,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,7 +32,7 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.lecomte.jessy.booksinventory.BuildConfig;
-import com.lecomte.jessy.booksinventory.Data.BookData;
+import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
@@ -38,10 +41,12 @@ import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class AddBookFragment extends DialogFragment {
+public class AddBookFragment extends DialogFragment
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String TAG = AddBookFragment.class.getSimpleName();
     public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
+    private static final int LOADER_ID = 30;
 
     private float mWidthMultiplier = 1;
     private float mHeightMultiplier = 1;
@@ -55,14 +60,12 @@ public class AddBookFragment extends DialogFragment {
     private TextView mBookSubTitleTextView;
     private TextView mAuthorTextView;
     private ImageView mBookImage;
-    private String mPreviousIsbn = "";
+    private String mSavedIsbn = "";
 
     private BookServiceResult mBookServiceResult;
-    private Button mSaveButton;
-    private BookData mBookData = new BookData();
     private onBookAddedListener mBookAddedListener;
     private int mAddBookResultCode = -1;
-    private TextView mBookInDbTextView;
+    private TextView mBookAddedStatusTextView;
 
     public AddBookFragment() {
     }
@@ -75,30 +78,70 @@ public class AddBookFragment extends DialogFragment {
         return fragment;
     }
 
-    private void updateUI(final BookData bookEntry) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mBookTitleTextView.setText(bookEntry.getTitle());
-                mBookSubTitleTextView.setText(bookEntry.getSubTitle());
-                mAuthorTextView.setText(bookEntry.getAuthors());
+    public void loadBookData() {
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
 
-                if (bookEntry.getImageUrl() != null && Patterns.WEB_URL.matcher(bookEntry.getImageUrl()).matches()){
-                    new DownloadImage(mBookImage).execute(bookEntry.getImageUrl());
-                }
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader() - Creating new cursor loader...");
+        return new CursorLoader(
+                getActivity(),
+                AlexandriaContract.BookEntry.buildFullBookUri(Long.parseLong(mSavedIsbn)),
+                null,
+                null,
+                null,
+                null
+        );
+    }
 
-                //mSaveButton.setVisibility(View.VISIBLE);
-                showSaveButton(mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_DOWNLOADED);
-            }
-        });
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished()");
+        if (!data.moveToFirst()) {
+            return;
+        }
+
+        String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        mBookTitleTextView.setText(bookTitle);
+
+        /*Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text)+bookTitle);
+        shareActionProvider.setShareIntent(shareIntent);*/
+
+        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        mBookSubTitleTextView.setText(bookSubTitle);
+
+        /*String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
+        mBookDescription.setText(desc);
+
+        //String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String[] authorsArr = authors.split(",");
+        ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
+        ((TextView) rootView.findViewById(R.id.authors)).setText(authors.replace(",","\n"));*/
+
+        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+
+        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
+            new DownloadImage(mBookImage).execute(imgUrl);
+            mBookImage.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
     // Container Activity must implement this interface
     public interface onBookAddedListener {
-        public void onBookAddedToDatabase();
+        public void notifyDatabaseChanged();
     }
 
     public class BookServiceResult extends ResultReceiver {
+
         private final String TAG = BookServiceResult.class.getSimpleName();
 
         /**
@@ -111,37 +154,22 @@ public class AddBookFragment extends DialogFragment {
         public BookServiceResult(Handler handler) {
             super(handler);
         }
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            super.onReceiveResult(resultCode, resultData);
-
-            mAddBookResultCode = resultData.getInt(BookService.EXTRA_RESULT_CODE);
-
-            // If book found or downloaded, display book data
-            if (mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_IN_DB ||
-                    mAddBookResultCode == BookService.EXTRA_RESULT_BOOK_DOWNLOADED) {
-
-                mBookData = resultData.getParcelable(BookService.EXTRA_RESULT_DATA);
-
-                if (mBookData != null) {
-                    updateUI(mBookData);
-                }
-            }
-
-            //Log.d(TAG, "onReceiveResult() - Data received from service: " + result);
-            //Toast.makeText(this, "Received: " + result, Toast.LENGTH_LONG);
-        }
     }
 
-    private void showSaveButton(boolean bShow) {
-        if (bShow) {
-            mSaveButton.setVisibility(View.VISIBLE);
-            mBookInDbTextView.setVisibility(View.INVISIBLE);
-            return;
+    void showBookAddStatus(boolean bBookAdded) {
+
+        // Book was added to the library
+        if (bBookAdded) {
+            mBookAddedStatusTextView.setText(R.string.book_added_to_library);
         }
-        mSaveButton.setVisibility(View.INVISIBLE);
-        mBookInDbTextView.setVisibility(View.VISIBLE);
+
+        // Book was already in the library
+        else {
+            mBookAddedStatusTextView.setText(R.string.book_already_in_library);
+        }
+
+        mBookAddedStatusTextView.setVisibility(View.VISIBLE);
+        mBookAddedStatusTextView.setTextColor(getResources().getColor(R.color.colorAccent));
     }
 
     @Override
@@ -238,8 +266,7 @@ public class AddBookFragment extends DialogFragment {
         mBookSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
         mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
         mBookImage = (ImageView)rootView.findViewById(R.id.book_image);
-        mSaveButton = (Button)rootView.findViewById(R.id.save_button);
-        mBookInDbTextView = (TextView)rootView.findViewById(R.id.book_in_db);
+        mBookAddedStatusTextView = (TextView)rootView.findViewById(R.id.book_add_status);
 
         // Widgets events handlers
 
@@ -255,18 +282,6 @@ public class AddBookFragment extends DialogFragment {
             public void onClick(View view) {
                 // Make sure to use the code for a fragment (not the same as the code for activity)
                 IntentIntegrator.forSupportFragment(AddBookFragment.this).initiateScan();
-            }
-        });
-
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Saving...", Toast.LENGTH_SHORT).show();
-
-                // Send book data to Main view so it gets loaded in the list view
-                if (mBookAddedListener != null) {
-                    mBookAddedListener.onBookAddedToDatabase();
-                }
             }
         });
 
@@ -286,12 +301,12 @@ public class AddBookFragment extends DialogFragment {
                 Log.d(TAG, "afterTextChanged(): " + editable + " [Length: " + editable.length() + "]");
                 String isbn = editable.toString();
 
-                if (isbn.length() < 13 || isbn.equals(mPreviousIsbn)) {
+                if (isbn.length() < 13 || isbn.equals(mSavedIsbn)) {
                     return;
                 }
 
-                sendLoadBookCommandToService(isbn);
-                mPreviousIsbn = isbn;
+                sendFetchBookCommandToService(isbn);
+                mSavedIsbn = isbn;
             }
         });
 
@@ -300,7 +315,7 @@ public class AddBookFragment extends DialogFragment {
         return rootView;
     }
 
-    private void sendLoadBookCommandToService(String isbn) {
+    private void sendFetchBookCommandToService(String isbn) {
 
         // BUG FIX: Prevent app from crashing when internet is not available
         if (!Utility.isInternetAvailable(getActivity())) {
@@ -313,9 +328,8 @@ public class AddBookFragment extends DialogFragment {
         bookIntent.putExtra(BookService.EAN, isbn);
         bookIntent.putExtra(BookService.EXTRA_RESULT_OBJECT, mBookServiceResult);
         bookIntent.setAction(BookService.FETCH_BOOK);
-        Log.d(TAG, "sendLoadBookCommandToService() - Starting BookService with command FETCH_BOOK");
+        Log.d(TAG, "sendFetchBookCommandToService() - Starting BookService with command FETCH_BOOK");
         getActivity().startService(bookIntent);
-        //AddBookFragment.this.restartLoader();
     }
 
     // Clear search field and result widgets
@@ -324,10 +338,10 @@ public class AddBookFragment extends DialogFragment {
         mBookTitleTextView.setText("");
         mBookSubTitleTextView.setText("");
         mAuthorTextView.setText("");
-        mPreviousIsbn = "";
+        mSavedIsbn = "";
         mBookImage.setVisibility(View.INVISIBLE);
-        mSaveButton.setVisibility(View.INVISIBLE);
-        mBookInDbTextView.setVisibility(View.INVISIBLE);
+        mBookAddedStatusTextView.setVisibility(View.INVISIBLE);
+        //mBookInDbTextView.setVisibility(View.INVISIBLE);
     }
 
     // The system calls this only when creating the layout in a dialog

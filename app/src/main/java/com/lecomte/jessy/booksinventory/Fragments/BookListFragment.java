@@ -60,6 +60,27 @@ public class BookListFragment extends ListFragment
         );
     }
 
+    void notifyOfBookSelection() {
+        // Notify the details fragment to load the book data
+        // Has to be done this way or else I get an illegal state exception
+        // Apparently, it's a known bug in Android
+        // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
+
+                if (cursor == null || !cursor.moveToFirst()) {
+                    Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+                    return;
+                }
+                mCallbacks.onItemSelected(cursor.getString(cursor
+                        .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+            }
+        });
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         //Log.d(TAG, "onLoadFinished()");
@@ -70,6 +91,7 @@ public class BookListFragment extends ListFragment
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
+            mBooksInListCount = mBookListAdapter.getCount();
         }
 
         // Just load the new data into the books list
@@ -77,54 +99,18 @@ public class BookListFragment extends ListFragment
             mBookListAdapter.swapCursor(data);
         }
 
-        if (mBookListAdapter.getCount() < mBooksInListCount) {
-            bBookDeleted = true;
-        }
-
-        else if (mBookListAdapter.getCount() > mBooksInListCount) {
-            bBookAdded = true;
-        }
-
-        mBooksInListCount = mBookListAdapter.getCount();
-        Log.d(TAG, "Books in list: " + mBooksInListCount);
-
-        // The app was just started
-        if (mSelectedItemIndex == ListView.INVALID_POSITION) {
-            // The database is not empty (it has some books records)
-            if (data.getCount() > 0) {
-                // Select the first book in the list
-                mSelectedItemIndex = 0;
-
-                // Notify the details fragment to load the book data
-                // Has to be done this way or else I get an illegal state exception
-                // Apparently, it's a known bug in Android
-                // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
-
-                        if (cursor == null || !cursor.moveToFirst()) {
-                            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
-                            return;
-                        }
-                        mCallbacks.onItemSelected(cursor.getString(cursor
-                                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
-                    }
-                });
-
-            } else {
-                return;
-            }
-        }
-
-        else if (bBookDeleted) {
-            //mSelectedItemIndex = (mSelectedItemIndex - 1) == ListView.INVALID_POSITION? ListView.INVALID_POSITION: mSelectedItemIndex - 1;
+        // A book was added to the database since the last time the list was loaded
+        if (mBookListAdapter.getCount() > mBooksInListCount) {
+            Log.d(TAG, "onLoadFinished() - A book was ADDED to the DB");
             mSelectedItemIndex = 0;
+            notifyOfBookSelection();
+        }
 
-            //if (mSelectedItemIndex == ListView.INVALID_POSITION) {
-            if (mBooksInListCount == 0) {
+        // A book was deleted from the database since the last time the list was loaded
+        else if (mBookListAdapter.getCount() < mBooksInListCount) {
+            Log.d(TAG, "onLoadFinished() - A book was DELETED from the DB");
+            if (mBookListAdapter.getCount() == 0) {
+                mSelectedItemIndex = ListView.INVALID_POSITION;
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
@@ -135,48 +121,33 @@ public class BookListFragment extends ListFragment
             }
 
             else {
-                // Notify the details fragment to load the book data
-                // Has to be done this way or else I get an illegal state exception
-                // Apparently, it's a known bug in Android
-                // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
-
-                        if (cursor == null || !cursor.moveToFirst()) {
-                            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
-                            return;
-                        }
-                        mCallbacks.onItemSelected(cursor.getString(cursor
-                                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
-                    }
-                });
+                mSelectedItemIndex = 0;
+                notifyOfBookSelection();
             }
         }
 
-        else if (bBookAdded) {
-            mSelectedItemIndex = 0;
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
+        // First-time loading or reloading after a configuration change
+        else {
+            // The app was just started
+            if (mSelectedItemIndex == ListView.INVALID_POSITION) {
+                // The database is not empty (it has some books records)
+                if (data.getCount() > 0) {
+                    // Select the first book in the list
+                    mSelectedItemIndex = 0;
+                    notifyOfBookSelection();
 
-                    if (cursor == null || !cursor.moveToFirst()) {
-                        Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
-                        return;
-                    }
-                    mCallbacks.onItemSelected(cursor.getString(cursor
-                            .getColumnIndex(AlexandriaContract.BookEntry._ID)));
+                } else {
+                    return;
                 }
-            });
+            }
         }
 
         // Highglight/select the item that was selected before we reloaded the books list
         getListView().setItemChecked(mSelectedItemIndex, true);
         getListView().smoothScrollToPosition(mSelectedItemIndex);
+        mBooksInListCount = mBookListAdapter.getCount();
+        Log.d(TAG, "onLoadFinished() - Books in list: " + mBooksInListCount);
+        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);
     }
 
     @Override
@@ -210,7 +181,6 @@ public class BookListFragment extends ListFragment
         if (savedInstanceState != null) {
             mSelectedItemIndex = savedInstanceState.getInt(SELECTED_ITEM_INDEX);
             Log.d(TAG, "onViewCreated() - mSelectedItemIndex: " + mSelectedItemIndex);
-            //getListView().setItemChecked(mSelectedItemIndex, true);
         }
 
         getLoaderManager().initLoader(LOADER_ID, null, this);

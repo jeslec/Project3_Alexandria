@@ -16,9 +16,10 @@
     <!-- Add book screen -->
     <string name="add_book_title">Add Book</string>
     <string name="internet_not_available">Internet offline, book search disabled</string>
-    <string name="save_button">Save</string>
 
     <!-- Book detail screen -->
     <string name="book_detail_ShareButton">Share</string>
+    <string name="book_added_to_library">Book added to your library</string>
+    <string name="book_already_in_library">This book is already in your library</string>
 
 </resources>

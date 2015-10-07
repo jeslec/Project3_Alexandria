@@ -97,34 +97,86 @@ public class BookListActivity extends AppCompatActivity
 
         // Register to receive messages from the BookService
         mMessageReceiver = new MessageReceiver();
-        IntentFilter filter = new IntentFilter(MESSAGE_EVENT);
+        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 
         // TODO: If exposing deep links into your app, handle intents here.
     }
 
-    @Override
-    public void onBookAddedToDatabase() {
-        //Toast.makeText(this, "Book list received: " + data.getTitle(), Toast.LENGTH_SHORT);
+    private void notifyAddBookFragmentToLoadBookData() {
+        FragmentManager fm = getSupportFragmentManager();
+        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentByTag(AddBookFragment.TAG);
 
-        BookListFragment bookListFragment = (BookListFragment)
-                getSupportFragmentManager().findFragmentById(R.id.book_list);
-
-        if (bookListFragment != null) {
-            // If article frag is available, we're in two-pane layout...
-
-            // Call a method in the ArticleFragment to update its content
-            bookListFragment.reloadListItems();
+        if (addFragment != null) {
+            addFragment.loadBookData();
         }
     }
 
+    @Override
+    public void notifyDatabaseChanged() {
+
+        FragmentManager fm = getSupportFragmentManager();
+
+        // Notify the book list to reload its list with fresh data from the DB
+        BookListFragment bookListFragment = (BookListFragment)fm.findFragmentById(R.id.book_list);
+
+        if (bookListFragment != null) {
+            bookListFragment.reloadListItems();
+        }
+
+        notifyAddBookFragmentToLoadBookData();
+    }
+
+    // Receive messages from BookService
     private class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getStringExtra(MESSAGE_KEY)!=null){
+            Log.d(TAG, "MessageReceiver#onReceive()");
+
+            if (intent == null || !intent.hasExtra(BookService.EXTRA_COMMAND) ||
+                    !intent.hasExtra(BookService.EXTRA_RESULT)) {
+                Log.e(TAG, "MessageReceiver() - One of the params sent by the service is invalid");
+                return;
+            }
+
+            String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
+            int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
+
+            if (command == BookService.FETCH_BOOK) {
+                Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
+
+                if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
+                    // Notify fragments they need to update themselves
+                    notifyDatabaseChanged();
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
+                }
+
+                else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
+                    notifyAddBookFragmentToLoadBookData();
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            else if (command == BookService.DELETE_BOOK) {
+                Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
+
+                if (result == BookService.DELETE_RESULT_DELETED) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_DELETED");
+                }
+
+                else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_NOT_DELETED");
+                }
+            }
+
+            /*if (intent.getStringExtra(MESSAGE_KEY)!=null){
                 Toast.makeText(BookListActivity.this, intent.getStringExtra(MESSAGE_KEY),
                         Toast.LENGTH_LONG).show();
-            }
+            }*/
         }
     }
 

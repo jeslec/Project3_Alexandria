@@ -40,10 +40,6 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     private static final String TAG = BookDetailFragment.class.getSimpleName();
     private static final int LOADER_ID = 11;
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private DummyContent.DummyItem mItem;
     private String mItemIsbn;
     private TextView mBookTitle;
     private TextView mBookSubTitle;
@@ -102,11 +98,6 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mBookImage = (ImageView) rootView.findViewById(R.id.book_detail_Image);
         mBookDescription = (TextView) rootView.findViewById(R.id.book_detail_Description);
         mShareButton = (Button) rootView.findViewById(R.id.book_detail_ShareButton);
-
-        // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.book_detail)).setText(mItem.details);
-        }
 
         clearWidgets();
 

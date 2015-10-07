@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ResultReceiver;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
@@ -31,14 +32,35 @@ public class BookService extends IntentService {
 
     private final String TAG = BookService.class.getSimpleName();
 
+    // Commands this service can accomplish for the client
     public static final String FETCH_BOOK = "it.jaschke.alexandria.services.action.FETCH_BOOK";
     public static final String DELETE_BOOK = "it.jaschke.alexandria.services.action.DELETE_BOOK";
+
+    // Service to client communication
+
+    // Intent action when this service sends data to the client
+    public static final String MESSAGE = BuildConfig.APPLICATION_ID + ".MESSAGE";
+
+    // Extras returned to client (keys)
+    public static final String EXTRA_COMMAND = BuildConfig.APPLICATION_ID + ".EXTRA_COMMAND";
+    public static final String EXTRA_RESULT  = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT";
+
+    // Fetch book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is FETCH_BOOK)
+    public static final int FETCH_RESULT_ADDED_TO_DB   = 1;
+    public static final int FETCH_RESULT_ALREADY_IN_DB = 2;
+
+    // Delete book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is DELETE_BOOK)
+    public static final int DELETE_RESULT_DELETED      = 10;
+    public static final int DELETE_RESULT_NOT_DELETED  = 11;
+
+
+
+
 
     public static final String EXTRA_RESULT_OBJECT = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_OBJECT";
     public static final String EXTRA_RESULT_DATA = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_DATA";
 
     public static final String EXTRA_RESULT_CODE = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_CODE";
-    public static final int EXTRA_RESULT_BOOK_NOT_FOUND  = 1;
     public static final int EXTRA_RESULT_BOOK_IN_DB      = 2;
     public static final int EXTRA_RESULT_BOOK_DOWNLOADED = 3;
 
@@ -65,7 +87,9 @@ public class BookService extends IntentService {
                 final String ean = intent.getStringExtra(EAN);
                 Log.d(TAG, "onHandleIntent() - Action: FETCH_BOOK [ISBN: " + ean + "]");
                 fetchBook(ean);
-            } else if (DELETE_BOOK.equals(action)) {
+            }
+
+            else if (DELETE_BOOK.equals(action)) {
                 final String ean = intent.getStringExtra(EAN);
                 Log.d(TAG, "onHandleIntent() - Action: DELETE_BOOK [ISBN: " + ean + "]");
                 deleteBook(ean);
@@ -79,8 +103,17 @@ public class BookService extends IntentService {
      */
     private void deleteBook(String ean) {
         Log.d(TAG, "deleteBook() - ISBN: " + ean);
+        int rowsDeleted = 0;
         if (ean != null) {
-            getContentResolver().delete(AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)), null, null);
+            rowsDeleted = getContentResolver().delete(
+                    AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)), null, null);
+            Log.d(TAG, "deleteBook() - Number of books deleted: " + rowsDeleted);
+        }
+
+        if (rowsDeleted > 0) {
+            sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_DELETED);
+        } else {
+            sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_NOT_DELETED);
         }
     }
     
@@ -94,6 +127,15 @@ public class BookService extends IntentService {
         bookInfo.setAuthors(cursor.getString(cursor.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR)));
         bookInfo.setCategories(cursor.getString(cursor.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY)));
         return bookInfo;
+    }
+
+    private void sendCommandResultToClient(String command, int result) {
+        Intent intent = new Intent(MESSAGE);
+        intent.putExtra(EXTRA_COMMAND, command);
+        intent.putExtra(EXTRA_RESULT, result);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        Log.d(TAG, "sendCommandResultToClient() - Command: " + command);
+        Log.d(TAG, "sendCommandResultToClient() - Result: " + result);
     }
 
     /**
@@ -120,11 +162,7 @@ public class BookService extends IntentService {
             Log.d(TAG, "fetchBook() - No need to download, this book is already in the database");
 
             if (bookCursor.moveToFirst()) {
-                BookData bookInfo = cursorToBookData(bookCursor);
-                Bundle data = new Bundle();
-                data.putInt(EXTRA_RESULT_CODE, EXTRA_RESULT_BOOK_IN_DB);
-                data.putParcelable(BookService.EXTRA_RESULT_DATA, bookInfo);
-                mCommandResult.send(0, data);
+                sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_ALREADY_IN_DB);
             }
             
             bookCursor.close();
@@ -244,11 +282,7 @@ public class BookService extends IntentService {
         }
 
         // Book downloaded and saved to DB
-        //BookData bookInfo = cursorToBookData(bookCursor);
-        Bundle addBookResult = new Bundle();
-        addBookResult.putInt(EXTRA_RESULT_CODE, EXTRA_RESULT_BOOK_DOWNLOADED);
-        addBookResult.putParcelable(BookService.EXTRA_RESULT_DATA, mBookData);
-        mCommandResult.send(0, addBookResult);
+        sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_ADDED_TO_DB);
     }
 
     private void writeBackBook(String ean, String title, String subtitle, String desc, String imgUrl) {

@@ -111,18 +111,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
-                <Button
+                <!--<Button
                     android:id="@+id/save_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/save_button"/>
+                    android:text="@string/save_button"/>-->
 
                 <TextView
-                    android:id="@+id/book_in_db"
+                    android:id="@+id/book_add_status"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Book already in database"
-                    android:textColor="#ff0000"/>
+                    android:layout_height="wrap_content"/>
 
             </LinearLayout>
 
