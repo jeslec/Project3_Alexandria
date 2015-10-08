@@ -227,7 +227,10 @@ public class BookProvider extends ContentProvider {
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
-                //Log.d(TAG, "Calling getContentResolver().notifyChange() - Uri: " + AlexandriaContract.BookEntry.buildFullBookUri(_id));
+                // Bug fix: the URL used to notify the content resolver was not the same that was
+                // used to initialize the Cursor Loader so the notification did not reach the
+                // loader so the loader did not update the data when the database was changed
+                //http://stackoverflow.com/questions/17075382/cursorloader-not-refreshing-when-underlying-data-changes#20384567
                 //getContext().getContentResolver().notifyChange(AlexandriaContract.BookEntry.buildFullBookUri(_id), null);
                 getContext().getContentResolver().notifyChange(uri, null);
                 break;

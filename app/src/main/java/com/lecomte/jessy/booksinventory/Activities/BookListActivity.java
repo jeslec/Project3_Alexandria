@@ -109,25 +109,9 @@ public class BookListActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void notifyDatabaseChanged() {
-
-        /*FragmentManager fm = getSupportFragmentManager();
-
-        // Notify the book list to reload its list with fresh data from the DB
-        BookListFragment bookListFragment = (BookListFragment)fm.findFragmentById(R.id.book_list);
-
-        if (bookListFragment != null) {
-            bookListFragment.notifyBookAddedToDatabase();
-        }
-
-        notifyAddBookFragmentToLoadBookData();*/
-    }
-
     private void setSelectedBook(String isbn) {
 
         FragmentManager fm = getSupportFragmentManager();
-
         BookListFragment bookListFragment = (BookListFragment) fm.findFragmentById(R.id.book_list);
 
         if (bookListFragment != null) {
@@ -144,6 +128,8 @@ public class BookListActivity extends AppCompatActivity
         loadBookDetailsView(isbn);
     }
 
+    // Good tutorial on broadcast receivers:
+    //http://www.vogella.com/tutorials/AndroidServices/article.html#servicecommunication_receiver
     // Receive messages from BookService
     private class MessageReceiver extends BroadcastReceiver {
         @Override
@@ -165,9 +151,7 @@ public class BookListActivity extends AppCompatActivity
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
-                    // Notify fragments they need to update themselves
-                    //notifyDatabaseChanged();
-                    //notifyBookAddedToDatabase(isbn);
+                    notifyAddBookFragmentToLoadBookData();
                     Toast.makeText(BookListActivity.this, getResources()
                             .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
                 }
@@ -185,10 +169,14 @@ public class BookListActivity extends AppCompatActivity
 
                 if (result == BookService.DELETE_RESULT_DELETED) {
                     Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_DELETED");
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_deleted), Toast.LENGTH_SHORT).show();
                 }
 
                 else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
                     Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_NOT_DELETED");
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_not_deleted), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -307,10 +295,8 @@ public class BookListActivity extends AppCompatActivity
         }
 
         else if (id == R.id.action_delete_book) {
-            FragmentManager fm = getSupportFragmentManager();
-
-            // Notify the book list to reload its list with fresh data from the DB
-            BookListFragment bookListFragment = (BookListFragment)fm.findFragmentById(R.id.book_list);
+            BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
+                                                    .findFragmentById(R.id.book_list);
 
             if (bookListFragment != null) {
                 bookListFragment.deleteSelectedBook();

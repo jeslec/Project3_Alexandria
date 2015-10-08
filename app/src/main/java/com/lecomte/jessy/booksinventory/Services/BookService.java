@@ -53,22 +53,6 @@ public class BookService extends IntentService {
     public static final int DELETE_RESULT_DELETED      = 10;
     public static final int DELETE_RESULT_NOT_DELETED  = 11;
 
-
-
-
-
-    public static final String EXTRA_RESULT_OBJECT = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_OBJECT";
-    public static final String EXTRA_RESULT_DATA = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_DATA";
-
-    public static final String EXTRA_RESULT_CODE = BuildConfig.APPLICATION_ID + ".EXTRA_RESULT_CODE";
-    public static final int EXTRA_RESULT_BOOK_IN_DB      = 2;
-    public static final int EXTRA_RESULT_BOOK_DOWNLOADED = 3;
-
-    public static final String ISBN = "it.jaschke.alexandria.services.extra.ISBN";
-
-    private ResultReceiver mCommandResult;
-    private BookData mBookData = new BookData();
-
     public BookService() {
         super("Alexandria");
     }
@@ -80,17 +64,14 @@ public class BookService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
 
-            // Object used to send data back to the client
-            mCommandResult = intent.getParcelableExtra(EXTRA_RESULT_OBJECT);
-
             if (FETCH_BOOK.equals(action)) {
-                final String ean = intent.getStringExtra(ISBN);
+                final String ean = intent.getStringExtra(EXTRA_ISBN);
                 Log.d(TAG, "onHandleIntent() - Action: FETCH_BOOK [ISBN: " + ean + "]");
                 fetchBook(ean);
             }
 
             else if (DELETE_BOOK.equals(action)) {
-                final String ean = intent.getStringExtra(ISBN);
+                final String ean = intent.getStringExtra(EXTRA_ISBN);
                 Log.d(TAG, "onHandleIntent() - Action: DELETE_BOOK [ISBN: " + ean + "]");
                 deleteBook(ean);
             }
@@ -110,6 +91,7 @@ public class BookService extends IntentService {
             Log.d(TAG, "deleteSelectedBook() - Number of books deleted: " + rowsDeleted);
         }
 
+        // Send status to client about the delete command
         if (rowsDeleted > 0) {
             sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_DELETED, isbn);
         } else {
@@ -289,11 +271,6 @@ public class BookService extends IntentService {
     }
 
     private void writeBackBook(String ean, String title, String subtitle, String desc, String imgUrl) {
-        mBookData.setTitle(title);
-        mBookData.setSubTitle(subtitle);
-        mBookData.setDescription(desc);
-        mBookData.setImageUrl(imgUrl);
-
         ContentValues values= new ContentValues();
         values.put(AlexandriaContract.BookEntry._ID, ean);
         values.put(AlexandriaContract.BookEntry.TITLE, title);

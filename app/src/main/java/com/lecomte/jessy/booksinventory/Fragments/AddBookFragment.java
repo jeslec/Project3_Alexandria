@@ -137,7 +137,6 @@ public class AddBookFragment extends DialogFragment
 
     // Container Activity must implement this interface
     public interface Callbacks {
-        public void notifyDatabaseChanged();
         public void notifyBookSelected(String isbn);
     }
 
@@ -326,8 +325,7 @@ public class AddBookFragment extends DialogFragment
         }
 
         Intent bookIntent = new Intent(getActivity(), BookService.class);
-        bookIntent.putExtra(BookService.ISBN, isbn);
-        bookIntent.putExtra(BookService.EXTRA_RESULT_OBJECT, mBookServiceResult);
+        bookIntent.putExtra(BookService.EXTRA_ISBN, isbn);
         bookIntent.setAction(BookService.FETCH_BOOK);
         Log.d(TAG, "sendFetchBookCommandToService() - Starting BookService with command FETCH_BOOK");
         getActivity().startService(bookIntent);

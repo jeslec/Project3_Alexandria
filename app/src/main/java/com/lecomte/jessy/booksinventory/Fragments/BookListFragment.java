@@ -45,6 +45,7 @@ public class BookListFragment extends ListFragment
     private BookListAdapter mBookListAdapter;
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
     private int mBooksInListCount = 0;
+    private boolean mDeleteBookInProgress = false;
 
     public void onBookAdded(String isbn) {
         mSelectedItemIndex = 0;
@@ -92,11 +93,20 @@ public class BookListFragment extends ListFragment
         super.onResume();
     }
 
+    private String getIsbnAtIndex(int index) {
+        Cursor cursor = mBookListAdapter.getCursor();
+
+        if (cursor == null || !cursor.moveToPosition(index)) {
+            Log.d(TAG, "getIsbnAtIndex() - Invalid cursor");
+            return null;
+        }
+
+        return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished()");
-        /*boolean bBookDeleted = false;
-        boolean bBookAdded = false;*/
 
         // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
@@ -110,90 +120,26 @@ public class BookListFragment extends ListFragment
             mBookListAdapter.swapCursor(data);
         }
 
-        // Select/highlight the first book in the list
-        /*mSelectedItemIndex = 0;
-        getListView().setItemChecked(mSelectedItemIndex, true);*/
+        if (mDeleteBookInProgress) {
+            mDeleteBookInProgress = false;
 
-        // Notify the main activity so it can load the details view for the newly added book
-
-
-        // Highglight/select the item that was selected before we reloaded the books list
-        /*getListView().setItemChecked(mSelectedItemIndex, true);
-        getListView().smoothScrollToPosition(mSelectedItemIndex);*/
-        /*mBooksInListCount = mBookListAdapter.getCount();
-        Log.d(TAG, "onLoadFinished() - Books in list: " + mBooksInListCount);
-        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);*/
-
-        // A book was added to the database since the last time the list was loaded
-        /*if (mBookListAdapter.getCount() > mBooksInListCount) {
-            Log.d(TAG, "onLoadFinished() - A book was ADDED to the DB");
-            mSelectedItemIndex = 0;
-            notifyOfBookSelection();
-        }*/
-
-        /*
-        // A book was deleted from the database since the last time the list was loaded
-        else if (mBookListAdapter.getCount() < mBooksInListCount) {
-            Log.d(TAG, "onLoadFinished() - A book was DELETED from the DB");
-            if (mBookListAdapter.getCount() == 0) {
-                mSelectedItemIndex = ListView.INVALID_POSITION;
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mCallbacks.onItemSelected(null);
-                    }
-                });
+            // Set the currently selected book in the list as the first one in the list
+            mSelectedItemIndex = mBookListAdapter.getCount() > 0? 0 : ListView.INVALID_POSITION;
+            if (mSelectedItemIndex != ListView.INVALID_POSITION) {
+                getListView().setItemChecked(mSelectedItemIndex, true);
             }
 
-            else {
-                mSelectedItemIndex = 0;
-                notifyOfBookSelection();
-            }
-        }
-
-        // First-time loading or reloading after a configuration change
-        else {
-            // The app was just started
-            if (mSelectedItemIndex == ListView.INVALID_POSITION) {
-                // The database is not empty (it has some books records)
-                if (data.getCount() > 0) {
-                    // Select the first book in the list
-                    mSelectedItemIndex = 0;
-                    notifyOfBookSelection();
-
-                } else {
-                    return;
+            // Inform the main activity so it can update the details view with this book's data
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    String isbn = mBookListAdapter.getCount() > 0?
+                            getIsbnAtIndex(mSelectedItemIndex) : null;
+                    mCallbacks.onItemSelected(isbn);
                 }
-            }
+            });
         }
-        */
-
-        // Highglight/select the item that was selected before we reloaded the books list
-        /*getListView().setItemChecked(mSelectedItemIndex, true);
-        getListView().smoothScrollToPosition(mSelectedItemIndex);
-        mBooksInListCount = mBookListAdapter.getCount();
-        Log.d(TAG, "onLoadFinished() - Books in list: " + mBooksInListCount);
-        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);*/
-
-        // Print list content
-        /*String bookEntry;
-        String isbn;
-        int isbnIndex;
-        Cursor cursor;
-        int titleIndex;
-        String title;
-        ListAdapter adapter = getListAdapter();
-
-        for (int i=0; i<adapter.getCount(); i++) {
-            cursor = (Cursor)adapter.getItem(i);
-            isbnIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry._ID);
-            isbn = cursor.getString(isbnIndex);
-            titleIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE);
-            title = cursor.getString(titleIndex);
-            bookEntry = String.format("[%d]: %s   %s", i, isbn, title);
-            Log.d(TAG, bookEntry);
-        }*/
     }
 
     @Override
@@ -214,13 +160,10 @@ public class BookListFragment extends ListFragment
         if (isbn != null && !isbn.isEmpty()) {
             // Delete selected book from database as identified by its ISBN
             Intent bookIntent = new Intent(getActivity(), BookService.class);
-            bookIntent.putExtra(BookService.ISBN, isbn);
+            bookIntent.putExtra(BookService.EXTRA_ISBN, isbn);
             bookIntent.setAction(BookService.DELETE_BOOK);
+            mDeleteBookInProgress = true;
             getActivity().startService(bookIntent);
-
-            // Since currently selected book was deleted, we must highlight another book in list
-            // We set it to the first book in the list (at index 0)
-            setSelectedBook(0);
         }
     }
 
@@ -283,7 +226,7 @@ public class BookListFragment extends ListFragment
         Cursor cursor = mBookListAdapter.getCursor();
 
         if (cursor == null || !cursor.moveToFirst()) {
-            Log.d(TAG, "setSelectedBook() - Cursor is invalid!");    
+            Log.d(TAG, "setSelectedBook() - Cursor is invalid!");
         }
 
         for (int i=0; i<cursor.getCount() && !bIndexFound; i++) {
