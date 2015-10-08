@@ -162,6 +162,12 @@ public class BookListActivity extends AppCompatActivity
                     Toast.makeText(BookListActivity.this, getResources()
                             .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();
                 }
+
+                else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_not_found), Toast.LENGTH_SHORT).show();
+                }
             }
 
             else if (command == BookService.DELETE_BOOK) {

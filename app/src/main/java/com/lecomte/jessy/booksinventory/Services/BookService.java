@@ -48,6 +48,7 @@ public class BookService extends IntentService {
     // Fetch book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is FETCH_BOOK)
     public static final int FETCH_RESULT_ADDED_TO_DB   = 1;
     public static final int FETCH_RESULT_ALREADY_IN_DB = 2;
+    public static final int FETCH_RESULT_NOT_FOUND     = 3;
 
     // Delete book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is DELETE_BOOK)
     public static final int DELETE_RESULT_DELETED      = 10;
@@ -231,6 +232,7 @@ public class BookService extends IntentService {
                 /*Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
                 messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.not_found));
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);*/
+                sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_NOT_FOUND, isbn);
                 return;
             }
 
