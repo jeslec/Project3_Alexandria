@@ -12,7 +12,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
@@ -47,32 +46,6 @@ public class BookListFragment extends ListFragment
     private int mBooksInListCount = 0;
     private boolean mDeleteBookInProgress = false;
 
-    public void onBookAdded(String isbn) {
-        mSelectedItemIndex = 0;
-        getListView().setItemChecked(mSelectedItemIndex, true);
-    }
-
-    void notifyOfBookSelection() {
-        // Notify the details fragment to load the book data
-        // Has to be done this way or else I get an illegal state exception
-        // Apparently, it's a known bug in Android
-        // http://stackoverflow.com/questions/22788684/can-not-perform-this-action-inside-of-onloadfinished#24962974
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                Cursor cursor = (Cursor) getListView().getItemAtPosition(mSelectedItemIndex);
-
-                if (cursor == null || !cursor.moveToFirst()) {
-                    Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
-                    return;
-                }
-                mCallbacks.onItemSelected(cursor.getString(cursor
-                        .getColumnIndex(AlexandriaContract.BookEntry._ID)));
-            }
-        });
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
@@ -93,14 +66,11 @@ public class BookListFragment extends ListFragment
         super.onResume();
     }
 
-    private String getIsbnAtIndex(int index) {
-        Cursor cursor = mBookListAdapter.getCursor();
-
+    private String getIsbnAtIndex(Cursor cursor, int index) {
         if (cursor == null || !cursor.moveToPosition(index)) {
             Log.d(TAG, "getIsbnAtIndex() - Invalid cursor");
             return null;
         }
-
         return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
     }
 
@@ -135,7 +105,7 @@ public class BookListFragment extends ListFragment
                 @Override
                 public void run() {
                     String isbn = mBookListAdapter.getCount() > 0?
-                            getIsbnAtIndex(mSelectedItemIndex) : null;
+                            getIsbnAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex) : null;
                     mCallbacks.onItemSelected(isbn);
                 }
             });
@@ -220,50 +190,43 @@ public class BookListFragment extends ListFragment
     }
 
     public void setSelectedBook(String isbn) {
-        String rowIsbn;
-        int indexToSelect = 0;
+        int booksCount = mBookListAdapter.getCount();
         boolean bIndexFound = false;
         Cursor cursor = mBookListAdapter.getCursor();
+        String rowIsbn;
+        int indexToSelect = ListView.INVALID_POSITION;
 
-        if (cursor == null || !cursor.moveToFirst()) {
-            Log.d(TAG, "setSelectedBook() - Cursor is invalid!");
-        }
-
-        for (int i=0; i<cursor.getCount() && !bIndexFound; i++) {
-            rowIsbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
+        for (int i=0; i<booksCount && !bIndexFound; i++) {
+            rowIsbn = getIsbnAtIndex(cursor, i);
 
             if (rowIsbn.equals(isbn)) {
                 indexToSelect = i;
                 bIndexFound = true;
             }
-            cursor.moveToNext();
         }
-
         mSelectedItemIndex = indexToSelect;
-        getListView().setItemChecked(mSelectedItemIndex, true);
-        getListView().smoothScrollToPosition(mSelectedItemIndex);
+
+        if (mSelectedItemIndex != ListView.INVALID_POSITION) {
+            getListView().setItemChecked(mSelectedItemIndex, true);
+            getListView().smoothScrollToPosition(mSelectedItemIndex);
+        }
     }
 
     private void setSelectedBook(int position) {
-        Cursor cursor = (Cursor)getListView().getItemAtPosition(position);
+        String isbn = getIsbnAtIndex(mBookListAdapter.getCursor(), position);
 
-        if (cursor == null || !cursor.moveToPosition(position)) {
-            Log.d(TAG, "setSelectedBook() - Cursor null or empty!");
+        if (isbn == null) {
+            Log.d(TAG, "setSelectedBook() - ISBN is null!");
             mSelectedItemIndex = ListView.INVALID_POSITION;
             return;
         }
-
-        mCallbacks.onItemSelected(cursor.getString(cursor
-                .getColumnIndex(AlexandriaContract.BookEntry._ID)));
-
+        mCallbacks.onItemSelected(isbn);
         mSelectedItemIndex = position;
-        Log.d(TAG, "setSelectedBook() - mSelectedItemIndex: " + mSelectedItemIndex);
     }
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
-
         setSelectedBook(position);
     }
 

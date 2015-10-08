@@ -1,10 +1,7 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -23,7 +20,6 @@ import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.DownloadImage;
-import com.lecomte.jessy.booksinventory.dummy.DummyContent;
 
 /**
  * A fragment representing a single Book detail screen.
