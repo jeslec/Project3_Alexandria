@@ -26,4 +26,8 @@
     <string name="book_not_found">Book not found</string>
     <string name="book_not_selected">You must first select a book from the list</string>
 
+    <!-- Delete Book dialog -->
+    <string name="deletion_message">Delete this book?</string>
+    <string name="delete_book_dialog_title">Deletion Confirmation</string>
+
 </resources>

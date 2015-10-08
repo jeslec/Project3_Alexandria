@@ -61,8 +61,6 @@ public class AddBookFragment extends DialogFragment
     private TextView mAuthorTextView;
     private ImageView mBookImage;
     private String mSavedIsbn = "";
-
-    private BookServiceResult mBookServiceResult;
     private Callbacks mCallbacks;
     private int mAddBookResultCode = -1;
     private TextView mBookAddedStatusTextView;
@@ -138,22 +136,6 @@ public class AddBookFragment extends DialogFragment
     // Container Activity must implement this interface
     public interface Callbacks {
         public void notifyBookSelected(String isbn);
-    }
-
-    public class BookServiceResult extends ResultReceiver {
-
-        private final String TAG = BookServiceResult.class.getSimpleName();
-
-        /**
-         * Create a new ResultReceive to receive results.  Your
-         * {@link #onReceiveResult} method will be called from the thread running
-         * <var>handler</var> if given, or from an arbitrary thread if null.
-         *
-         * @param handler
-         */
-        public BookServiceResult(Handler handler) {
-            super(handler);
-        }
     }
 
     void showBookAddStatus(boolean bBookAdded) {
@@ -238,8 +220,6 @@ public class AddBookFragment extends DialogFragment
             mHeightMultiplier = height.getFloat();
             mDimAmount = dim.getFloat();
         }
-
-        mBookServiceResult = new BookServiceResult(null);
     }
 
     // See section: Showing a Dialog Fullscreen or as an Embedded Fragment from

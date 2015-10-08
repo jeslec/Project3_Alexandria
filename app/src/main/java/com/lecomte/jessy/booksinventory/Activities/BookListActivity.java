@@ -16,13 +16,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
+import com.lecomte.jessy.booksinventory.Fragments.DeleteBookFragment;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 
@@ -45,7 +45,8 @@ import com.lecomte.jessy.booksinventory.Services.BookService;
  */
 public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks,
-        AddBookFragment.Callbacks {
+        AddBookFragment.Callbacks,
+        DeleteBookFragment.Callbacks {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
 
@@ -128,6 +129,22 @@ public class BookListActivity extends AppCompatActivity
 
         // Show details view for this book
         loadBookDetailsView(isbn);
+    }
+
+    @Override
+    public void onDeleteBookRequest() {
+        boolean bBookDeleted = false;
+        BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.book_list);
+
+        if (bookListFragment != null) {
+            bBookDeleted = bookListFragment.deleteSelectedBook();
+        }
+
+        // If book was not deleted, it means no book was selected in the list
+        if (!bBookDeleted) {
+            Toast.makeText(this, R.string.book_not_selected, Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Good tutorial on broadcast receivers:
@@ -243,6 +260,39 @@ public class BookListActivity extends AppCompatActivity
         }
     }
 
+    private void loadDeleteBookConfirmationView() {
+        /*FragmentManager fm = getSupportFragmentManager();
+        DeleteBookFragment deleteBookDialog = new DeleteBookFragment();
+        deleteBookDialog.show(fm, DeleteBookFragment.TAG);
+
+        boolean bBookDeleted = false;
+        BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.book_list);*/
+
+        if (mTwoPane) {
+            DeleteBookFragment fragment = null;
+            FragmentManager fragMgr = getSupportFragmentManager();
+            fragment = (DeleteBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+
+            FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
+
+            if (fragment == null) {
+                Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
+                fragment = DeleteBookFragment.newInstance(mTwoPane);
+                fragmentTransaction.add(fragment, DeleteBookFragment.TAG);
+            } else {
+                Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
+                fragmentTransaction.remove(fragment)
+                        .add(fragment, DeleteBookFragment.TAG);
+            }
+            fragmentTransaction.commit();
+        } else {
+            Intent intent = new Intent(this, DeleteBookActivity.class);
+            intent.putExtra(DeleteBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
+            startActivity(intent);
+        }
+    }
+
     private void loadAboutView() {
         if (mTwoPane) {
             AboutFragment fragment = null;
@@ -329,18 +379,7 @@ public class BookListActivity extends AppCompatActivity
 
         else if (id == R.id.menu_delete_book) {
             Log.d(TAG, "onOptionsItemSelected() - Delete book icon clicked");
-            boolean bBookDeleted = false;
-            BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
-                                                    .findFragmentById(R.id.book_list);
-
-            if (bookListFragment != null) {
-                bBookDeleted = bookListFragment.deleteSelectedBook();
-            }
-
-            // If book was not deleted, it means no book was selected in the list
-            if (!bBookDeleted) {
-                Toast.makeText(this, R.string.book_not_selected, Toast.LENGTH_SHORT).show();
-            }
+            loadDeleteBookConfirmationView();
             return true;
         }
 
