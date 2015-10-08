@@ -43,7 +43,6 @@ public class BookListFragment extends ListFragment
 
     private BookListAdapter mBookListAdapter;
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
-    private int mBooksInListCount = 0;
     private boolean mDeleteBookInProgress = false;
 
     @Override
@@ -82,7 +81,7 @@ public class BookListFragment extends ListFragment
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
-            mBooksInListCount = mBookListAdapter.getCount();
+            setSelectedBookRunnable();
         }
 
         // Just load the new data into the books list
@@ -94,23 +93,7 @@ public class BookListFragment extends ListFragment
 
         if (mDeleteBookInProgress) {
             mDeleteBookInProgress = false;
-
-            // Set the currently selected book in the list as the first one in the list
-            mSelectedItemIndex = mBookListAdapter.getCount() > 0? 0 : ListView.INVALID_POSITION;
-            if (mSelectedItemIndex != ListView.INVALID_POSITION) {
-                getListView().setItemChecked(mSelectedItemIndex, true);
-            }
-
-            // Inform the main activity so it can update the details view with this book's data
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    String isbn = mBookListAdapter.getCount() > 0?
-                            getIsbnAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex) : null;
-                    mCallbacks.onItemSelected(isbn);
-                }
-            });
+            setSelectedBookRunnable();
         }
     }
 
@@ -119,24 +102,22 @@ public class BookListFragment extends ListFragment
         mBookListAdapter.swapCursor(null);
     }
 
-    public void deleteSelectedBook() {
-        Cursor cursor = mBookListAdapter.getCursor();
+    public boolean deleteSelectedBook() {
+        if (mSelectedItemIndex != ListView.INVALID_POSITION) {
+            String isbn = getIsbnAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex);
 
-        if (cursor == null || !cursor.moveToPosition(mSelectedItemIndex)) {
-            Log.d(TAG, "deleteSelectedBook() - Invalid cursor");
-            return;
+            if (isbn != null) {
+                // Delete selected book from database as identified by its ISBN
+                Intent bookIntent = new Intent(getActivity(), BookService.class);
+                bookIntent.putExtra(BookService.EXTRA_ISBN, isbn);
+                bookIntent.setAction(BookService.DELETE_BOOK);
+                mDeleteBookInProgress = true;
+                getActivity().startService(bookIntent);
+                return true;
+            }
         }
 
-        String isbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
-
-        if (isbn != null && !isbn.isEmpty()) {
-            // Delete selected book from database as identified by its ISBN
-            Intent bookIntent = new Intent(getActivity(), BookService.class);
-            bookIntent.putExtra(BookService.EXTRA_ISBN, isbn);
-            bookIntent.setAction(BookService.DELETE_BOOK);
-            mDeleteBookInProgress = true;
-            getActivity().startService(bookIntent);
-        }
+        return false;
     }
 
     /**
@@ -192,6 +173,25 @@ public class BookListFragment extends ListFragment
 
         // Reset the active callbacks interface to the dummy implementation.
         mCallbacks = null;
+    }
+
+    private void setSelectedBookRunnable() {
+        // Set the currently selected book in the list as the first one in the list
+        mSelectedItemIndex = mBookListAdapter.getCount() > 0? 0 : ListView.INVALID_POSITION;
+        if (mSelectedItemIndex != ListView.INVALID_POSITION) {
+            getListView().setItemChecked(mSelectedItemIndex, true);
+        }
+
+        // Inform the main activity so it can update the details view with this book's data
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                String isbn = mBookListAdapter.getCount() > 0 ?
+                        getIsbnAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex) : null;
+                mCallbacks.onItemSelected(isbn);
+            }
+        });
     }
 
     public void setSelectedBook(String isbn) {

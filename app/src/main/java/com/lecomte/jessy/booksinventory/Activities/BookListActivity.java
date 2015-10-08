@@ -329,11 +329,17 @@ public class BookListActivity extends AppCompatActivity
 
         else if (id == R.id.menu_delete_book) {
             Log.d(TAG, "onOptionsItemSelected() - Delete book icon clicked");
+            boolean bBookDeleted = false;
             BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
                                                     .findFragmentById(R.id.book_list);
 
             if (bookListFragment != null) {
-                bookListFragment.deleteSelectedBook();
+                bBookDeleted = bookListFragment.deleteSelectedBook();
+            }
+
+            // If book was not deleted, it means no book was selected in the list
+            if (!bBookDeleted) {
+                Toast.makeText(this, R.string.book_not_selected, Toast.LENGTH_SHORT).show();
             }
             return true;
         }
