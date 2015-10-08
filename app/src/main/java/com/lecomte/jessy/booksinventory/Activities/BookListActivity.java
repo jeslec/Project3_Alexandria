@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -17,10 +16,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
@@ -47,7 +44,7 @@ import com.lecomte.jessy.booksinventory.Services.BookService;
  */
 public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks,
-        AddBookFragment.onBookAddedListener {
+        AddBookFragment.Callbacks {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
 
@@ -115,16 +112,36 @@ public class BookListActivity extends AppCompatActivity
     @Override
     public void notifyDatabaseChanged() {
 
-        FragmentManager fm = getSupportFragmentManager();
+        /*FragmentManager fm = getSupportFragmentManager();
 
         // Notify the book list to reload its list with fresh data from the DB
         BookListFragment bookListFragment = (BookListFragment)fm.findFragmentById(R.id.book_list);
 
         if (bookListFragment != null) {
-            bookListFragment.reloadListItems();
+            bookListFragment.notifyBookAddedToDatabase();
         }
 
-        notifyAddBookFragmentToLoadBookData();
+        notifyAddBookFragmentToLoadBookData();*/
+    }
+
+    private void setSelectedBook(String isbn) {
+
+        FragmentManager fm = getSupportFragmentManager();
+
+        BookListFragment bookListFragment = (BookListFragment) fm.findFragmentById(R.id.book_list);
+
+        if (bookListFragment != null) {
+            bookListFragment.setSelectedBook(isbn);
+        }
+    }
+
+    @Override
+    public void notifyBookSelected(String isbn) {
+        // Select book in list
+        setSelectedBook(isbn);
+
+        // Show details view for this book
+        loadBookDetailsView(isbn);
     }
 
     // Receive messages from BookService
@@ -141,6 +158,7 @@ public class BookListActivity extends AppCompatActivity
 
             String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
             int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
+            String isbn = intent.getStringExtra(BookService.EXTRA_ISBN);
 
             if (command == BookService.FETCH_BOOK) {
                 Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
@@ -148,7 +166,8 @@ public class BookListActivity extends AppCompatActivity
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                     // Notify fragments they need to update themselves
-                    notifyDatabaseChanged();
+                    //notifyDatabaseChanged();
+                    //notifyBookAddedToDatabase(isbn);
                     Toast.makeText(BookListActivity.this, getResources()
                             .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
                 }
@@ -180,18 +199,13 @@ public class BookListActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Callback method from {@link BookListFragment.Callbacks}
-     * indicating that the item with the given ID was selected.
-     */
-    @Override
-    public void onItemSelected(String id) {
+    private void loadBookDetailsView(String isbn) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(BookDetailFragment.ARG_ITEM_ID, id);
+            arguments.putString(BookDetailFragment.ARG_ITEM_ID, isbn);
             BookDetailFragment fragment = new BookDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -202,9 +216,69 @@ public class BookListActivity extends AppCompatActivity
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
             Intent detailIntent = new Intent(this, BookDetailActivity.class);
-            detailIntent.putExtra(BookDetailFragment.ARG_ITEM_ID, id);
+            detailIntent.putExtra(BookDetailFragment.ARG_ITEM_ID, isbn);
             startActivity(detailIntent);
         }
+    }
+
+    private void loadAddBookView() {
+        Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
+        if (mTwoPane) {
+            AddBookFragment fragment = null;
+            FragmentManager fragMgr = getSupportFragmentManager();
+            fragment = (AddBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+
+            FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
+
+            if (fragment == null) {
+                Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
+                fragment = AddBookFragment.newInstance(mTwoPane);
+                fragmentTransaction.add(fragment, AddBookFragment.TAG);
+            } else {
+                Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
+                fragmentTransaction.remove(fragment)
+                        .add(fragment, AddBookFragment.TAG);
+            }
+            fragmentTransaction.commit();
+        } else {
+            Intent intent = new Intent(this, AddBookActivity.class);
+            intent.putExtra(AddBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
+            startActivity(intent);
+        }
+    }
+
+    private void loadAboutView() {
+        if (mTwoPane) {
+            AboutFragment fragment = null;
+            FragmentManager fragMgr = getSupportFragmentManager();
+            fragment = (AboutFragment) fragMgr.findFragmentByTag(AboutFragment.TAG);
+
+            FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
+
+            if (fragment == null) {
+                Log.d(TAG, "AboutActivityFragment not found, creating a new one and putting it in layout");
+                fragment = AboutFragment.newInstance(mTwoPane);
+                fragmentTransaction.add(fragment, AboutFragment.TAG);
+            } else {
+                Log.d(TAG, "AboutActivityFragment found, putting it in layout...");
+                fragmentTransaction.remove(fragment)
+                        .add(fragment, AboutFragment.TAG);
+            }
+            fragmentTransaction.commit();
+        } else {
+            Intent intent = new Intent(this, AboutActivity.class);
+            intent.putExtra(AboutFragment.EXTRA_BOOL_2PANE, mTwoPane);
+            startActivity(intent);
+        }
+    }
+
+    /**
+     * Callback method from {@link BookListFragment.Callbacks}
+     * indicating that the item with the given ID was selected.
+     */
+    @Override
+    public void onItemSelected(String isbn) {
+        loadBookDetailsView(isbn);
     }
 
     @Override
@@ -225,90 +299,27 @@ public class BookListActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.action_add_book) {
-            Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
-            if (mTwoPane) {
-                AddBookFragment fragment = null;
-                FragmentManager fragMgr = getSupportFragmentManager();
-                fragment = (AddBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+        }
 
-                FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
-
-                if (fragment == null) {
-                    Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
-                    fragment = AddBookFragment.newInstance(mTwoPane);
-                    fragmentTransaction.add(fragment, AddBookFragment.TAG);
-                } else {
-                    Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
-                    fragmentTransaction.remove(fragment)
-                            .add(fragment, AddBookFragment.TAG);
-                }
-                fragmentTransaction.commit();
-            } else {
-                Intent intent = new Intent(this, AddBookActivity.class);
-                intent.putExtra(AddBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
-                startActivity(intent);
-            }
+        else if (id == R.id.action_add_book) {
+            loadAddBookView();
             return true;
         }
 
         else if (id == R.id.action_delete_book) {
-            // Get position of currently selected book in list
-            ListView booksListView = (ListView)findViewById(android.R.id.list);
-            int itemIndex = booksListView.getCheckedItemPosition();
-            Log.d(TAG, "onOptionsItemSelected() - Index of selected book: " + itemIndex);
+            FragmentManager fm = getSupportFragmentManager();
 
-            if (itemIndex == ListView.INVALID_POSITION) {
-                Toast.makeText(this, "Please select book to delete from the list", Toast.LENGTH_SHORT).show();
-            }
+            // Notify the book list to reload its list with fresh data from the DB
+            BookListFragment bookListFragment = (BookListFragment)fm.findFragmentById(R.id.book_list);
 
-            else {
-                Toast.makeText(this, "Deleting Book at index: " + itemIndex, Toast.LENGTH_SHORT).show();
-                Cursor cursor = (Cursor) booksListView.getItemAtPosition(itemIndex);
-
-                if (cursor == null || !cursor.moveToFirst()) {
-                    Log.d(TAG, "onOptionsItemSelected() - Cursor null or empty!");
-                    return true;
-                }
-
-                if (cursor != null) {
-                    String isbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
-
-                    // Delete selected book from database as identified by its ISBN
-                    if (isbn != null && !isbn.isEmpty()) {
-                        Intent bookIntent = new Intent(this, BookService.class);
-                        bookIntent.putExtra(BookService.EAN, isbn);
-                        bookIntent.setAction(BookService.DELETE_BOOK);
-                        startService(bookIntent);
-                    }
-                }
+            if (bookListFragment != null) {
+                bookListFragment.deleteSelectedBook();
             }
             return true;
         }
 
         else if (id == R.id.action_about) {
-            if (mTwoPane) {
-                AboutFragment fragment = null;
-                FragmentManager fragMgr = getSupportFragmentManager();
-                fragment = (AboutFragment) fragMgr.findFragmentByTag(AboutFragment.TAG);
-
-                FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
-
-                if (fragment == null) {
-                    Log.d(TAG, "AboutActivityFragment not found, creating a new one and putting it in layout");
-                    fragment = AboutFragment.newInstance(mTwoPane);
-                    fragmentTransaction.add(fragment, AboutFragment.TAG);
-                } else {
-                    Log.d(TAG, "AboutActivityFragment found, putting it in layout...");
-                    fragmentTransaction.remove(fragment)
-                            .add(fragment, AboutFragment.TAG);
-                }
-                fragmentTransaction.commit();
-            } else {
-                Intent intent = new Intent(this, AboutActivity.class);
-                intent.putExtra(AboutFragment.EXTRA_BOOL_2PANE, mTwoPane);
-                startActivity(intent);
-            }
+            loadAboutView();
             return true;
         }
 

@@ -156,6 +156,9 @@ public class BookProvider extends ContentProvider {
                         AlexandriaContract.BookEntry.TABLE_NAME + "." + AlexandriaContract.BookEntry._ID,
                         null,
                         sortOrder);
+                // Notify the listeners (e.g. cursor loaders) the data has changed JESSY
+                /*Log.d(TAG, "Calling notifyChange() - Uri: " + uri);
+                getContext().getContentResolver().notifyChange(uri, null);*/
                 break;
             case BOOK_FULL:
                 String[] bf_projection ={
@@ -171,6 +174,9 @@ public class BookProvider extends ContentProvider {
                         AlexandriaContract.BookEntry.TABLE_NAME + "." + AlexandriaContract.BookEntry._ID,
                         null,
                         sortOrder);
+                // Notify the listeners (e.g. cursor loaders) the data has changed JESSY
+                /*Log.d(TAG, "Calling notifyChange() - Uri: " + uri);
+                getContext().getContentResolver().notifyChange(uri, null);*/
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -221,7 +227,9 @@ public class BookProvider extends ContentProvider {
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
-                getContext().getContentResolver().notifyChange(AlexandriaContract.BookEntry.buildFullBookUri(_id), null);
+                //Log.d(TAG, "Calling getContentResolver().notifyChange() - Uri: " + AlexandriaContract.BookEntry.buildFullBookUri(_id));
+                //getContext().getContentResolver().notifyChange(AlexandriaContract.BookEntry.buildFullBookUri(_id), null);
+                getContext().getContentResolver().notifyChange(uri, null);
                 break;
             }
             case AUTHOR:{

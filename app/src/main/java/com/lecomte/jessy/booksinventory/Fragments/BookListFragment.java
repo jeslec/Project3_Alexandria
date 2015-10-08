@@ -1,6 +1,7 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,11 +12,13 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
+import com.lecomte.jessy.booksinventory.Services.BookService;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -43,21 +46,9 @@ public class BookListFragment extends ListFragment
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
     private int mBooksInListCount = 0;
 
-    public void reloadListItems() {
-        getLoaderManager().restartLoader(LOADER_ID, null, this);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        return new CursorLoader(
-                getActivity(),
-                AlexandriaContract.BookEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null
-        );
+    public void onBookAdded(String isbn) {
+        mSelectedItemIndex = 0;
+        getListView().setItemChecked(mSelectedItemIndex, true);
     }
 
     void notifyOfBookSelection() {
@@ -82,10 +73,30 @@ public class BookListFragment extends ListFragment
     }
 
     @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        Log.d(TAG, "onCreateLoader() - Creating new CursorLoader with URI: " + AlexandriaContract.BookEntry.CONTENT_URI);
+
+        return new CursorLoader(
+                getActivity(),
+                AlexandriaContract.BookEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        //Log.d(TAG, "onLoadFinished()");
-        boolean bBookDeleted = false;
-        boolean bBookAdded = false;
+        Log.d(TAG, "onLoadFinished()");
+        /*boolean bBookDeleted = false;
+        boolean bBookAdded = false;*/
 
         // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
@@ -99,13 +110,28 @@ public class BookListFragment extends ListFragment
             mBookListAdapter.swapCursor(data);
         }
 
+        // Select/highlight the first book in the list
+        /*mSelectedItemIndex = 0;
+        getListView().setItemChecked(mSelectedItemIndex, true);*/
+
+        // Notify the main activity so it can load the details view for the newly added book
+
+
+        // Highglight/select the item that was selected before we reloaded the books list
+        /*getListView().setItemChecked(mSelectedItemIndex, true);
+        getListView().smoothScrollToPosition(mSelectedItemIndex);*/
+        /*mBooksInListCount = mBookListAdapter.getCount();
+        Log.d(TAG, "onLoadFinished() - Books in list: " + mBooksInListCount);
+        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);*/
+
         // A book was added to the database since the last time the list was loaded
-        if (mBookListAdapter.getCount() > mBooksInListCount) {
+        /*if (mBookListAdapter.getCount() > mBooksInListCount) {
             Log.d(TAG, "onLoadFinished() - A book was ADDED to the DB");
             mSelectedItemIndex = 0;
             notifyOfBookSelection();
-        }
+        }*/
 
+        /*
         // A book was deleted from the database since the last time the list was loaded
         else if (mBookListAdapter.getCount() < mBooksInListCount) {
             Log.d(TAG, "onLoadFinished() - A book was DELETED from the DB");
@@ -141,18 +167,61 @@ public class BookListFragment extends ListFragment
                 }
             }
         }
+        */
 
         // Highglight/select the item that was selected before we reloaded the books list
-        getListView().setItemChecked(mSelectedItemIndex, true);
+        /*getListView().setItemChecked(mSelectedItemIndex, true);
         getListView().smoothScrollToPosition(mSelectedItemIndex);
         mBooksInListCount = mBookListAdapter.getCount();
         Log.d(TAG, "onLoadFinished() - Books in list: " + mBooksInListCount);
-        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);
+        Log.d(TAG, "onLoadFinished() - Selected item index: " + mSelectedItemIndex);*/
+
+        // Print list content
+        /*String bookEntry;
+        String isbn;
+        int isbnIndex;
+        Cursor cursor;
+        int titleIndex;
+        String title;
+        ListAdapter adapter = getListAdapter();
+
+        for (int i=0; i<adapter.getCount(); i++) {
+            cursor = (Cursor)adapter.getItem(i);
+            isbnIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry._ID);
+            isbn = cursor.getString(isbnIndex);
+            titleIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE);
+            title = cursor.getString(titleIndex);
+            bookEntry = String.format("[%d]: %s   %s", i, isbn, title);
+            Log.d(TAG, bookEntry);
+        }*/
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mBookListAdapter.swapCursor(null);
+    }
+
+    public void deleteSelectedBook() {
+        Cursor cursor = mBookListAdapter.getCursor();
+
+        if (cursor == null || !cursor.moveToPosition(mSelectedItemIndex)) {
+            Log.d(TAG, "deleteSelectedBook() - Invalid cursor");
+            return;
+        }
+
+        String isbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
+
+        if (isbn != null && !isbn.isEmpty()) {
+            // Delete selected book from database as identified by its ISBN
+            Intent bookIntent = new Intent(getActivity(), BookService.class);
+            bookIntent.putExtra(BookService.ISBN, isbn);
+            bookIntent.setAction(BookService.DELETE_BOOK);
+            getActivity().startService(bookIntent);
+
+            // Since currently selected book was deleted, we must highlight another book in list
+            // We set it to the first book in the list (at index 0)
+            setSelectedBook(0);
+        }
     }
 
     /**
@@ -183,6 +252,7 @@ public class BookListFragment extends ListFragment
             Log.d(TAG, "onViewCreated() - mSelectedItemIndex: " + mSelectedItemIndex);
         }
 
+        // Load list view with books data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
@@ -206,14 +276,37 @@ public class BookListFragment extends ListFragment
         mCallbacks = null;
     }
 
-    @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
-        super.onListItemClick(listView, view, position, id);
+    public void setSelectedBook(String isbn) {
+        String rowIsbn;
+        int indexToSelect = 0;
+        boolean bIndexFound = false;
+        Cursor cursor = mBookListAdapter.getCursor();
 
-        Cursor cursor = (Cursor)listView.getItemAtPosition(position);
+        if (cursor == null || !cursor.moveToFirst()) {
+            Log.d(TAG, "setSelectedBook() - Cursor is invalid!");    
+        }
+
+        for (int i=0; i<cursor.getCount() && !bIndexFound; i++) {
+            rowIsbn = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
+
+            if (rowIsbn.equals(isbn)) {
+                indexToSelect = i;
+                bIndexFound = true;
+            }
+            cursor.moveToNext();
+        }
+
+        mSelectedItemIndex = indexToSelect;
+        getListView().setItemChecked(mSelectedItemIndex, true);
+        getListView().smoothScrollToPosition(mSelectedItemIndex);
+    }
+
+    private void setSelectedBook(int position) {
+        Cursor cursor = (Cursor)getListView().getItemAtPosition(position);
 
         if (cursor == null || !cursor.moveToPosition(position)) {
-            Log.d(TAG, "bookList.onItemClick() - Cursor null or empty!");
+            Log.d(TAG, "setSelectedBook() - Cursor null or empty!");
+            mSelectedItemIndex = ListView.INVALID_POSITION;
             return;
         }
 
@@ -221,7 +314,14 @@ public class BookListFragment extends ListFragment
                 .getColumnIndex(AlexandriaContract.BookEntry._ID)));
 
         mSelectedItemIndex = position;
-        Log.d(TAG, "onListItemClick() - mSelectedItemIndex: " + mSelectedItemIndex);
+        Log.d(TAG, "setSelectedBook() - mSelectedItemIndex: " + mSelectedItemIndex);
+    }
+
+    @Override
+    public void onListItemClick(ListView listView, View view, int position, long id) {
+        super.onListItemClick(listView, view, position, id);
+
+        setSelectedBook(position);
     }
 
     @Override

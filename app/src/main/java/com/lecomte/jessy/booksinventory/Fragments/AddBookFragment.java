@@ -63,7 +63,7 @@ public class AddBookFragment extends DialogFragment
     private String mSavedIsbn = "";
 
     private BookServiceResult mBookServiceResult;
-    private onBookAddedListener mBookAddedListener;
+    private Callbacks mCallbacks;
     private int mAddBookResultCode = -1;
     private TextView mBookAddedStatusTextView;
 
@@ -136,8 +136,9 @@ public class AddBookFragment extends DialogFragment
     }
 
     // Container Activity must implement this interface
-    public interface onBookAddedListener {
+    public interface Callbacks {
         public void notifyDatabaseChanged();
+        public void notifyBookSelected(String isbn);
     }
 
     public class BookServiceResult extends ResultReceiver {
@@ -177,11 +178,11 @@ public class AddBookFragment extends DialogFragment
         super.onAttach(activity);
 
         // Activities containing this fragment must implement its callbacks.
-        if (!(activity instanceof onBookAddedListener)) {
+        if (!(activity instanceof Callbacks)) {
             throw new IllegalStateException("Activity must implement fragment's callbacks.");
         }
 
-        mBookAddedListener = (onBookAddedListener) activity;
+        mCallbacks = (Callbacks) activity;
     }
 
     @Override
@@ -189,7 +190,7 @@ public class AddBookFragment extends DialogFragment
         super.onDetach();
 
         //
-        mBookAddedListener = null;
+        mCallbacks = null;
     }
 
     @Override
@@ -325,7 +326,7 @@ public class AddBookFragment extends DialogFragment
         }
 
         Intent bookIntent = new Intent(getActivity(), BookService.class);
-        bookIntent.putExtra(BookService.EAN, isbn);
+        bookIntent.putExtra(BookService.ISBN, isbn);
         bookIntent.putExtra(BookService.EXTRA_RESULT_OBJECT, mBookServiceResult);
         bookIntent.setAction(BookService.FETCH_BOOK);
         Log.d(TAG, "sendFetchBookCommandToService() - Starting BookService with command FETCH_BOOK");
@@ -403,6 +404,11 @@ public class AddBookFragment extends DialogFragment
     // Whitout this code, the fragment disapears when there's a configuration change
     @Override
     public void onDestroyView() {
+
+        if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
+            mCallbacks.notifyBookSelected(mSavedIsbn);
+        }
+
         if (getDialog() != null && getRetainInstance()) {
             getDialog().setDismissMessage(null);
         }

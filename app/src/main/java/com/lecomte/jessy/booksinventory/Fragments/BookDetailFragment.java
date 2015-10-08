@@ -164,4 +164,9 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
+    public void onBookAdded(String isbn) {
+        mItemIsbn = isbn;
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
 }
