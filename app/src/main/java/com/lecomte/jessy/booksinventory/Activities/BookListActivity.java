@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
@@ -59,6 +60,7 @@ public class BookListActivity extends AppCompatActivity
      * device.
      */
     private boolean mTwoPane;
+    private int mBooksInListCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,6 +278,31 @@ public class BookListActivity extends AppCompatActivity
     }
 
     @Override
+    public void onBookListLoadFinished(int bookCount) {
+        Log.d(TAG, "onBookListLoadFinished() - Books in list: " + bookCount);
+        // This value will be used in onPrepareOptionsMenu()
+        mBooksInListCount = bookCount;
+
+        //  Must call this so the menu gets updated right away
+        invalidateOptionsMenu();
+    }
+
+    // Hide the DeleteBook icon if the books list is empty
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+        MenuItem deleteBookMenuItem = menu.findItem(R.id.menu_delete_book);
+
+        if (deleteBookMenuItem == null) {
+            Log.d(TAG, "onPrepareOptionsMenu() - deleteBookMenuItem is null!");
+            return true;
+        }
+
+        deleteBookMenuItem.setVisible(mBooksInListCount > 0);
+        return true;
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -290,17 +317,18 @@ public class BookListActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.menu_settings) {
             Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
             return true;
         }
 
-        else if (id == R.id.action_add_book) {
+        else if (id == R.id.menu_add_book) {
             loadAddBookView();
             return true;
         }
 
-        else if (id == R.id.action_delete_book) {
+        else if (id == R.id.menu_delete_book) {
+            Log.d(TAG, "onOptionsItemSelected() - Delete book icon clicked");
             BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
                                                     .findFragmentById(R.id.book_list);
 
@@ -310,7 +338,7 @@ public class BookListActivity extends AppCompatActivity
             return true;
         }
 
-        else if (id == R.id.action_about) {
+        else if (id == R.id.menu_about) {
             loadAboutView();
             return true;
         }

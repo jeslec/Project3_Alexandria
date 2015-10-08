@@ -90,6 +90,8 @@ public class BookListFragment extends ListFragment
             mBookListAdapter.swapCursor(data);
         }
 
+        mCallbacks.onBookListLoadFinished(mBookListAdapter.getCount());
+
         if (mDeleteBookInProgress) {
             mDeleteBookInProgress = false;
 
@@ -147,6 +149,9 @@ public class BookListFragment extends ListFragment
          * Callback for when an item has been selected.
          */
         public void onItemSelected(String id);
+
+        // Inform main activity when book list is reloaded and sends book count
+        void onBookListLoadFinished(int bookCount);
     }
 
     /**
