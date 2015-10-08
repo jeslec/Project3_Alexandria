@@ -5,8 +5,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -56,14 +54,13 @@ public class AddBookFragment extends DialogFragment
     private ImageButton mClearIsbnButton;
     private ImageButton mScanIsbnButton;
     private TextView mIsbnTextView;
-    private TextView mBookTitleTextView;
-    private TextView mBookSubTitleTextView;
+    private TextView mTitleTextView;
+    private TextView mSubTitleTextView;
     private TextView mAuthorTextView;
     private ImageView mBookImage;
+    private TextView mCategoryTextView;
     private String mSavedIsbn = "";
     private Callbacks mCallbacks;
-    private int mAddBookResultCode = -1;
-    private TextView mBookAddedStatusTextView;
 
     public AddBookFragment() {
     }
@@ -93,6 +90,30 @@ public class AddBookFragment extends DialogFragment
         );
     }
 
+    /*
+    String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        mTitleTextView.setText(bookTitle);
+
+        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        mSubTitleTextView.setText(bookSubTitle);
+
+        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String[] authorsArr = authors.split(",");
+        mAuthorsTextView.setLines(authorsArr.length);
+        mAuthorsTextView.setText(authors.replace(",", "\n"));
+        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+        if(Patterns.WEB_URL.matcher(imgUrl).matches()){
+            new DownloadImage(mBookCoverImageView).execute(imgUrl);
+            mBookCoverImageView.setVisibility(View.VISIBLE);
+        }
+
+        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        mCateogriesTextView.setText(categories);
+
+        mSaveButton.setVisibility(View.VISIBLE);
+        mDeleteButton.setVisibility(View.VISIBLE);
+     */
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished()");
@@ -100,8 +121,31 @@ public class AddBookFragment extends DialogFragment
             return;
         }
 
+        // Title
         String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        mBookTitleTextView.setText(bookTitle);
+        mTitleTextView.setText(bookTitle);
+
+        // SubTitle
+        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        mSubTitleTextView.setText(bookSubTitle);
+
+        // Author
+        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String[] authorsArr = authors.split(",");
+        mAuthorTextView.setLines(authorsArr.length);
+        mAuthorTextView.setText(authors.replace(",","\n"));
+
+        // Category
+        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        mCategoryTextView.setText(categories);
+
+        // Image URL
+        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+
+        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
+            new DownloadImage(mBookImage).execute(imgUrl);
+            mBookImage.setVisibility(View.VISIBLE);
+        }
 
         /*Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
@@ -109,23 +153,11 @@ public class AddBookFragment extends DialogFragment
         shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text)+bookTitle);
         shareActionProvider.setShareIntent(shareIntent);*/
 
-        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        mBookSubTitleTextView.setText(bookSubTitle);
+        /*String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        mSubTitleTextView.setText(bookSubTitle);*/
 
         /*String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
-        mBookDescription.setText(desc);
-
-        //String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = authors.split(",");
-        ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
-        ((TextView) rootView.findViewById(R.id.authors)).setText(authors.replace(",","\n"));*/
-
-        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-
-        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
-            new DownloadImage(mBookImage).execute(imgUrl);
-            mBookImage.setVisibility(View.VISIBLE);
-        }
+        mBookDescription.setText(desc);*/
     }
 
     @Override
@@ -138,27 +170,11 @@ public class AddBookFragment extends DialogFragment
         public void notifyBookSelected(String isbn);
     }
 
-    void showBookAddStatus(boolean bBookAdded) {
-
-        // Book was added to the library
-        if (bBookAdded) {
-            mBookAddedStatusTextView.setText(R.string.book_added_to_library);
-        }
-
-        // Book was already in the library
-        else {
-            mBookAddedStatusTextView.setText(R.string.book_already_in_library);
-        }
-
-        mBookAddedStatusTextView.setVisibility(View.VISIBLE);
-        mBookAddedStatusTextView.setTextColor(getResources().getColor(R.color.colorAccent));
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        // Activities containing this fragment must implement its callbacks.
+        // Activities containing this fragment must implement its callbacks
         if (!(activity instanceof Callbacks)) {
             throw new IllegalStateException("Activity must implement fragment's callbacks.");
         }
@@ -242,11 +258,11 @@ public class AddBookFragment extends DialogFragment
         mClearIsbnButton = (ImageButton)rootView.findViewById(R.id.clear_isbn_imageButton);
         mScanIsbnButton = (ImageButton)rootView.findViewById(R.id.scan_isbn_imageButton);
         mIsbnTextView = (TextView)rootView.findViewById(R.id.isbn_editText);
-        mBookTitleTextView = (TextView)rootView.findViewById(R.id.book_title_textView);
-        mBookSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
+        mTitleTextView = (TextView)rootView.findViewById(R.id.book_title_textView);
+        mSubTitleTextView = (TextView)rootView.findViewById(R.id.book_subtitle_textView);
         mAuthorTextView = (TextView)rootView.findViewById(R.id.author_textView);
+        mCategoryTextView = (TextView)rootView.findViewById(R.id.category_textView);
         mBookImage = (ImageView)rootView.findViewById(R.id.book_image);
-        mBookAddedStatusTextView = (TextView)rootView.findViewById(R.id.book_add_status);
 
         // Widgets events handlers
 
@@ -314,13 +330,11 @@ public class AddBookFragment extends DialogFragment
     // Clear search field and result widgets
     private void clearWidgets() {
         mIsbnTextView.setText("");
-        mBookTitleTextView.setText("");
-        mBookSubTitleTextView.setText("");
+        mTitleTextView.setText("");
+        mSubTitleTextView.setText("");
         mAuthorTextView.setText("");
         mSavedIsbn = "";
         mBookImage.setVisibility(View.INVISIBLE);
-        mBookAddedStatusTextView.setVisibility(View.INVISIBLE);
-        //mBookInDbTextView.setVisibility(View.INVISIBLE);
     }
 
     // The system calls this only when creating the layout in a dialog
