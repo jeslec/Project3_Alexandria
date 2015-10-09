@@ -2,14 +2,21 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="app_bar_height">200dp</dimen>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- Size of music player window expressed as fraction (0.0-1.0) of max screen width -->
-    <item name="about_dialog_window_width" format="float" type="dimen">0.5</item>
+    <item name="about_dialog_window_width" format="float" type="dimen">0.6</item>
     <item name="about_dialog_window_height" format="float" type="dimen">0.4</item>
 
     <!-- Behind music player dim amount [0.0: no dimming; 1.0: full dimming] -->
     <item name="about_dialog_dim_behind_amount" format="float" type="dimen">0.6</item>
+
+    <!-- Margins for dialogs -->
+    <dimen name="dialog_horizontal_margin">16dp</dimen>
+    <dimen name="dialog_vertical_margin">16dp</dimen>
+    <dimen name="dialog_clear_button_left_margin">5dp</dimen>
+    <dimen name="dialog_scan_button_left_margin">5dp</dimen>
 </resources>

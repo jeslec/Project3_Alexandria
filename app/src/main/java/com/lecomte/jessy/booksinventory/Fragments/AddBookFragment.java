@@ -252,7 +252,7 @@ public class AddBookFragment extends DialogFragment
 
         // Hide this dialog's custom title if we are in the 1-pane scenario
         int visibility = mTwoPaneLayout? View.VISIBLE : View.GONE;
-        rootView.findViewById(R.id.add_book_title_frame).setVisibility(visibility);
+        //rootView.findViewById(R.id.add_book_title_frame).setVisibility(visibility);
 
         // Widgets references
         mClearIsbnButton = (ImageButton)rootView.findViewById(R.id.clear_isbn_imageButton);
@@ -333,6 +333,7 @@ public class AddBookFragment extends DialogFragment
         mTitleTextView.setText("");
         mSubTitleTextView.setText("");
         mAuthorTextView.setText("");
+        mCategoryTextView.setText("");
         mSavedIsbn = "";
         mBookImage.setVisibility(View.INVISIBLE);
     }
@@ -370,8 +371,8 @@ public class AddBookFragment extends DialogFragment
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
             // Resize dialog window so it takes maximum advantage of each device's screen size
-            dialogWindow.setLayout((int) (mWidthMultiplier * metrics.widthPixels),
-                    (int)(mHeightMultiplier * metrics.heightPixels));
+            /*dialogWindow.setLayout((int) (mWidthMultiplier * metrics.widthPixels),
+                    (int)(mHeightMultiplier * metrics.heightPixels));*/
 
             // Dim behind this dialog (must be called after dialog is created and view is set)
             dialogWindow.setFlags(dimFlag, dimFlag);
@@ -392,14 +393,29 @@ public class AddBookFragment extends DialogFragment
         }
     }
 
-    //http://stackoverflow.com/questions/12433397/android-dialogfragment-disappears-after-orientation-change#12434038
-    // Whitout this code, the fragment disapears when there's a configuration change
     @Override
-    public void onDestroyView() {
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
 
         if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
             mCallbacks.notifyBookSelected(mSavedIsbn);
         }
+    }
+
+    //http://stackoverflow.com/questions/12433397/android-dialogfragment-disappears-after-orientation-change#12434038
+    // Whitout this code, the fragment disapears when there's a configuration change
+    @Override
+    public void onDestroyView() {
+        Log.d(TAG, "onDestroyView()");
+        /*if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
+            mCallbacks.notifyBookSelected(mSavedIsbn);
+        }*/
 
         if (getDialog() != null && getRetainInstance()) {
             getDialog().setDismissMessage(null);
