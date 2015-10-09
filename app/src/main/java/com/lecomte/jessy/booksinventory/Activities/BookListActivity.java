@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -50,10 +49,6 @@ public class BookListActivity extends AppCompatActivity
 
     private static final String TAG = BookListActivity.class.getSimpleName();
 
-    // Messages received by the BookService intent
-    public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
-    public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
-
     private BroadcastReceiver mMessageReceiver;
 
     /**
@@ -76,8 +71,16 @@ public class BookListActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                BookListFragment bookListFragment = getBookListFragment();
+
+                if (bookListFragment == null) {
+                    return;
+                }
+
+                bookListFragment.shareSelectedBook();
+
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
         });
 
@@ -101,6 +104,11 @@ public class BookListActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 
         // TODO: If exposing deep links into your app, handle intents here.
+    }
+
+    private BookListFragment getBookListFragment() {
+        FragmentManager fm = getSupportFragmentManager();
+        return (BookListFragment)fm.findFragmentById(R.id.book_list);
     }
 
     private void notifyAddBookFragmentToLoadBookData() {
@@ -370,7 +378,6 @@ public class BookListActivity extends AppCompatActivity
         }
 
         else if (id == R.id.menu_delete_book) {
-            Log.d(TAG, "onOptionsItemSelected() - Delete book icon clicked");
             loadDeleteBookConfirmationView();
             return true;
         }

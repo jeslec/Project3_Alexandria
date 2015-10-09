@@ -73,6 +73,14 @@ public class BookListFragment extends ListFragment
         return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID));
     }
 
+    private String getTitleAtIndex(Cursor cursor, int index) {
+        if (cursor == null || !cursor.moveToPosition(index)) {
+            Log.d(TAG, "getTitleAtIndex() - Invalid cursor");
+            return null;
+        }
+        return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished()");
@@ -129,7 +137,7 @@ public class BookListFragment extends ListFragment
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
+        void onItemSelected(String id);
 
         // Inform main activity when book list is reloaded and sends book count
         void onBookListLoadFinished(int bookCount);
@@ -253,5 +261,18 @@ public class BookListFragment extends ListFragment
         getListView().setChoiceMode(activateOnItemClick
                 ? ListView.CHOICE_MODE_SINGLE
                 : ListView.CHOICE_MODE_NONE);
+    }
+
+    public void shareSelectedBook() {
+        String bookTitle = getTitleAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex);
+
+        if (bookTitle == null) {
+            return;
+        }
+
+        Intent shareUrlIntent = new Intent(Intent.ACTION_SEND);
+        shareUrlIntent.putExtra(Intent.EXTRA_TEXT, bookTitle);
+        shareUrlIntent.setType("text/plain");
+        startActivity(shareUrlIntent);
     }
 }
