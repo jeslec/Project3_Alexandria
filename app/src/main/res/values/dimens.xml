@@ -19,4 +19,5 @@
     <dimen name="dialog_vertical_margin">16dp</dimen>
     <dimen name="dialog_clear_button_left_margin">5dp</dimen>
     <dimen name="dialog_scan_button_left_margin">5dp</dimen>
+    <dimen name="dialog_ok_button_top_margin">16dp</dimen>
 </resources>

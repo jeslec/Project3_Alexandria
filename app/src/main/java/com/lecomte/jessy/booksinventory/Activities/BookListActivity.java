@@ -261,14 +261,6 @@ public class BookListActivity extends AppCompatActivity
     }
 
     private void loadDeleteBookConfirmationView() {
-        /*FragmentManager fm = getSupportFragmentManager();
-        DeleteBookFragment deleteBookDialog = new DeleteBookFragment();
-        deleteBookDialog.show(fm, DeleteBookFragment.TAG);
-
-        boolean bBookDeleted = false;
-        BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
-                .findFragmentById(R.id.book_list);*/
-
         if (mTwoPane) {
             DeleteBookFragment fragment = null;
             FragmentManager fragMgr = getSupportFragmentManager();

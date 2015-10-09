@@ -132,7 +132,7 @@ public class DeleteBookFragment extends DialogFragment {
 
         // Hide this dialog's custom title if we are in the 1-pane scenario
         int visibility = mTwoPaneLayout? View.VISIBLE : View.GONE;
-        rootView.findViewById(R.id.delete_book_title_frame).setVisibility(visibility);
+        //rootView.findViewById(R.id.delete_book_title_frame).setVisibility(visibility);
 
         // Widgets references
         mOkButton = (Button)rootView.findViewById(R.id.delete_book_ok_button);
@@ -141,7 +141,6 @@ public class DeleteBookFragment extends DialogFragment {
         mOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Ok button clicked!", Toast.LENGTH_SHORT).show();
                 mCallbacks.onDeleteBookRequest();
                 dismiss();
             }
@@ -190,8 +189,8 @@ public class DeleteBookFragment extends DialogFragment {
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
             // Resize dialog window so it takes maximum advantage of each device's screen size
-            dialogWindow.setLayout((int) (mWidthMultiplier * metrics.widthPixels),
-                    (int)(mHeightMultiplier * metrics.heightPixels));
+            /*dialogWindow.setLayout((int) (mWidthMultiplier * metrics.widthPixels),
+                    (int)(mHeightMultiplier * metrics.heightPixels));*/
 
             // Dim behind this dialog (must be called after dialog is created and view is set)
             dialogWindow.setFlags(dimFlag, dimFlag);
