@@ -57,6 +57,7 @@ public class BookListActivity extends AppCompatActivity
      */
     private boolean mTwoPane;
     private int mBooksInListCount = 0;
+    private FloatingActionButton mShareFloatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +68,8 @@ public class BookListActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mShareFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 BookListFragment bookListFragment = getBookListFragment();
@@ -349,6 +350,7 @@ public class BookListActivity extends AppCompatActivity
         }
 
         deleteBookMenuItem.setVisible(mBooksInListCount > 0);
+        mShareFloatingActionButton.setVisibility(mBooksInListCount>0? View.VISIBLE: View.INVISIBLE);
         return true;
     }
 
