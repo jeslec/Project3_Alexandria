@@ -122,7 +122,7 @@ public class BookListActivity extends AppCompatActivity
         BookListFragment bookListFragment = (BookListFragment) fm.findFragmentById(R.id.book_list);
 
         if (bookListFragment != null) {
-            bookListFragment.setSelectedBook(isbn);
+            bookListFragment.notifyOnBookClicked(isbn);
         }
     }
 
@@ -216,7 +216,7 @@ public class BookListActivity extends AppCompatActivity
         }
     }
 
-    private void loadBookDetailsView(String isbn) {
+    private void loadBookDetailsFragment(String isbn) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
@@ -228,10 +228,16 @@ public class BookListActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.book_detail_container, fragment)
                     .commit();
+        }
+    }
 
-        } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
+    private void loadBookDetailsView(String isbn) {
+        if (mTwoPane) {
+            loadBookDetailsFragment(isbn);
+        }
+
+        // In single-pane mode, simply start the detail activity for the selected item ID
+        else {
             Intent detailIntent = new Intent(this, BookDetailActivity.class);
             detailIntent.putExtra(BookDetailFragment.ARG_ITEM_ID, isbn);
             startActivity(detailIntent);
@@ -319,7 +325,15 @@ public class BookListActivity extends AppCompatActivity
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(String isbn) {
+    public void onBookForcedSelection(String isbn) {
+        // 2-pane layout: load book detains into fragment; 1-pane: do nothing
+        loadBookDetailsFragment(isbn);
+    }
+
+    // User clicked on a book item within the list of books
+    public void onBookClicked(String isbn) {
+
+        // 2-pane layout: load book details into fragment; 1-pane: load into a separate activity
         loadBookDetailsView(isbn);
     }
 
@@ -333,7 +347,6 @@ public class BookListActivity extends AppCompatActivity
         invalidateOptionsMenu();
     }
 
-    // Hide the DeleteBook icon if the books list is empty
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 
@@ -344,8 +357,10 @@ public class BookListActivity extends AppCompatActivity
             return true;
         }
 
-        deleteBookMenuItem.setVisible(mBooksInListCount > 0);
-        mShareFloatingActionButton.setVisibility(mBooksInListCount>0? View.VISIBLE: View.INVISIBLE);
+        // Single pane or no books: hide DeleteBook icon & share button
+        boolean bVisible = mTwoPane && mBooksInListCount > 0;
+        deleteBookMenuItem.setVisible(bVisible);
+        mShareFloatingActionButton.setVisibility(bVisible? View.VISIBLE: View.INVISIBLE);
         return true;
     }
 

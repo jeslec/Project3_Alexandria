@@ -11,6 +11,7 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
+import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
 import com.lecomte.jessy.booksinventory.R;
 
 /**
@@ -24,6 +25,8 @@ import com.lecomte.jessy.booksinventory.R;
  */
 public class BookDetailActivity extends AppCompatActivity {
 
+    private FloatingActionButton mShareFloatingActionButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,12 +34,20 @@ public class BookDetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mShareFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                BookDetailFragment detailFragment = (BookDetailFragment)getSupportFragmentManager()
+                        .findFragmentById(R.id.book_detail_container);
+
+                if (detailFragment != null) {
+                    detailFragment.shareBook();
+                }
+
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
         });
 

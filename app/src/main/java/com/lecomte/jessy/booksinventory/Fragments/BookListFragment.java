@@ -89,6 +89,7 @@ public class BookListFragment extends ListFragment
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
+            // Only call this if we are in a 2-pane layout
             setSelectedBookRunnable();
         }
 
@@ -101,6 +102,7 @@ public class BookListFragment extends ListFragment
 
         if (mDeleteBookInProgress) {
             mDeleteBookInProgress = false;
+            // Only call this if we are in a 2-pane layout
             setSelectedBookRunnable();
         }
     }
@@ -137,10 +139,12 @@ public class BookListFragment extends ListFragment
         /**
          * Callback for when an item has been selected.
          */
-        void onItemSelected(String id);
+        void onBookForcedSelection(String id);
 
         // Inform main activity when book list is reloaded and sends book count
         void onBookListLoadFinished(int bookCount);
+
+        void onBookClicked(String isbn);
     }
 
     /**
@@ -197,12 +201,12 @@ public class BookListFragment extends ListFragment
             public void run() {
                 String isbn = mBookListAdapter.getCount() > 0 ?
                         getIsbnAtIndex(mBookListAdapter.getCursor(), mSelectedItemIndex) : null;
-                mCallbacks.onItemSelected(isbn);
+                mCallbacks.onBookForcedSelection(isbn);
             }
         });
     }
 
-    public void setSelectedBook(String isbn) {
+    public void notifyOnBookClicked(String isbn) {
         int booksCount = mBookListAdapter.getCount();
         boolean bIndexFound = false;
         Cursor cursor = mBookListAdapter.getCursor();
@@ -225,22 +229,22 @@ public class BookListFragment extends ListFragment
         }
     }
 
-    private void setSelectedBook(int position) {
+    private void notifyOnBookClicked(int position) {
         String isbn = getIsbnAtIndex(mBookListAdapter.getCursor(), position);
 
         if (isbn == null) {
-            Log.d(TAG, "setSelectedBook() - ISBN is null!");
+            Log.d(TAG, "notifyOnBookClicked() - ISBN is null!");
             mSelectedItemIndex = ListView.INVALID_POSITION;
             return;
         }
-        mCallbacks.onItemSelected(isbn);
+        mCallbacks.onBookClicked(isbn);
         mSelectedItemIndex = position;
     }
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
-        setSelectedBook(position);
+        notifyOnBookClicked(position);
     }
 
     @Override

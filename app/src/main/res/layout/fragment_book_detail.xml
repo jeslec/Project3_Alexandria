@@ -15,16 +15,18 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="100"
-            android:layout_gravity="center_vertical">
+            android:layout_gravity="center_vertical"
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="50"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginRight="@dimen/book_detail_image_right_margin">
 
                 <ImageView
                     android:id="@+id/book_detail_Image"
@@ -60,12 +62,6 @@
                     android:id="@+id/book_detail_Description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-
-                <Button
-                    android:id="@+id/book_detail_ShareButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/book_detail_ShareButton"/>
 
             </LinearLayout>
 

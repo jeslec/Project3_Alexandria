@@ -64,7 +64,7 @@ public class AddBookFragment extends DialogFragment
     private ImageView mBookImage;
     private TextView mCategoryTextView;
     private String mSavedIsbn = "";
-    private Callbacks mCallbacks;
+    private Callbacks mCallbacks = null;
     private BookData mBookData = null;
     private boolean mConfigurationChanged = false;
     private Bundle mSavedInstanceState = null;
@@ -130,7 +130,7 @@ public class AddBookFragment extends DialogFragment
             mBookImage.setVisibility(View.VISIBLE);
         }
 
-        // TEST
+        // Save book info so we can reuse it when there's a configuration change
         mBookData = new BookData(bookTitle, bookSubTitle, mAuthorTextView.getText().toString(),
                 categories, imgUrl);
     }
