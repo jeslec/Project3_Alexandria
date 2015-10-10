@@ -31,6 +31,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
+import com.lecomte.jessy.booksinventory.Data.BookData;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
@@ -45,6 +46,9 @@ public class AddBookFragment extends DialogFragment
     public static final String TAG = AddBookFragment.class.getSimpleName();
     public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
     private static final int LOADER_ID = 30;
+
+    // Saved instance states
+    private static final String STATE_BOOK_DATA = BuildConfig.APPLICATION_ID + ".STATE_BOOK_DATA";
 
     private float mWidthMultiplier = 1;
     private float mHeightMultiplier = 1;
@@ -61,6 +65,9 @@ public class AddBookFragment extends DialogFragment
     private TextView mCategoryTextView;
     private String mSavedIsbn = "";
     private Callbacks mCallbacks;
+    private BookData mBookData = null;
+    private boolean mConfigurationChanged = false;
+    private Bundle mSavedInstanceState = null;
 
     public AddBookFragment() {
     }
@@ -89,30 +96,6 @@ public class AddBookFragment extends DialogFragment
                 null
         );
     }
-
-    /*
-    String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        mTitleTextView.setText(bookTitle);
-
-        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        mSubTitleTextView.setText(bookSubTitle);
-
-        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = authors.split(",");
-        mAuthorsTextView.setLines(authorsArr.length);
-        mAuthorsTextView.setText(authors.replace(",", "\n"));
-        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        if(Patterns.WEB_URL.matcher(imgUrl).matches()){
-            new DownloadImage(mBookCoverImageView).execute(imgUrl);
-            mBookCoverImageView.setVisibility(View.VISIBLE);
-        }
-
-        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
-        mCateogriesTextView.setText(categories);
-
-        mSaveButton.setVisibility(View.VISIBLE);
-        mDeleteButton.setVisibility(View.VISIBLE);
-     */
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -147,17 +130,9 @@ public class AddBookFragment extends DialogFragment
             mBookImage.setVisibility(View.VISIBLE);
         }
 
-        /*Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text)+bookTitle);
-        shareActionProvider.setShareIntent(shareIntent);*/
-
-        /*String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        mSubTitleTextView.setText(bookSubTitle);*/
-
-        /*String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
-        mBookDescription.setText(desc);*/
+        // TEST
+        mBookData = new BookData(bookTitle, bookSubTitle, mAuthorTextView.getText().toString(),
+                categories, imgUrl);
     }
 
     @Override
@@ -194,8 +169,6 @@ public class AddBookFragment extends DialogFragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-
-        setRetainInstance(true);
 
         Bundle fragmentArguments = getArguments();
         Intent intent = getActivity().getIntent();
@@ -248,6 +221,11 @@ public class AddBookFragment extends DialogFragment
                              @Nullable Bundle savedInstanceState) {
 
         Log.d(TAG, "onCreateView()");
+
+        // Used to know when we should use saved instance states instead of querying database
+        mConfigurationChanged= (savedInstanceState != null);
+        mSavedInstanceState = savedInstanceState;
+
         View rootView = inflater.inflate(R.layout.fragment_add_book, container, false);
 
         // Hide this dialog's custom title if we are in the 1-pane scenario
@@ -297,16 +275,38 @@ public class AddBookFragment extends DialogFragment
                 Log.d(TAG, "afterTextChanged(): " + editable + " [Length: " + editable.length() + "]");
                 String isbn = editable.toString();
 
-                if (isbn.length() < 13 || isbn.equals(mSavedIsbn)) {
+                if (isbn.length() < 13) {
+                    return;
+                }
+
+                // Don't query the database when a configuration change occurs
+                if (mConfigurationChanged && mSavedInstanceState != null &&
+                        mSavedInstanceState.containsKey(STATE_BOOK_DATA)) {
+                    Log.d(TAG, "onCreateView() - mBookData restored from savedInstanceState");
+                    mBookData = new BookData();
+                    mBookData = mSavedInstanceState.getParcelable(STATE_BOOK_DATA);
+
+                    mTitleTextView.setText(mBookData.getTitle());
+                    mSubTitleTextView.setText(mBookData.getSubTitle());
+                    mAuthorTextView.setText(mBookData.getAuthors());
+                    mCategoryTextView.setText(mBookData.getCategories());
+
+                    String imageUrl = mBookData.getImageUrl();
+
+                    //TODO: save image so we don't have to download it every time
+                    if (Patterns.WEB_URL.matcher(imageUrl).matches()) {
+                        new DownloadImage(mBookImage).execute(imageUrl);
+                        mBookImage.setVisibility(View.VISIBLE);
+                    }
+                    mConfigurationChanged = false;
                     return;
                 }
 
                 sendFetchBookCommandToService(isbn);
-                mSavedIsbn = isbn;
             }
         });
 
-        clearWidgets();
+        //clearWidgets();
 
         return rootView;
     }
@@ -317,6 +317,7 @@ public class AddBookFragment extends DialogFragment
         if (!Utility.isInternetAvailable(getActivity())) {
             Toast.makeText(getActivity(), R.string.internet_not_available,
                     Toast.LENGTH_LONG).show();
+            mSavedIsbn = "";
             return;
         }
 
@@ -325,10 +326,12 @@ public class AddBookFragment extends DialogFragment
         bookIntent.setAction(BookService.FETCH_BOOK);
         Log.d(TAG, "sendFetchBookCommandToService() - Starting BookService with command FETCH_BOOK");
         getActivity().startService(bookIntent);
+        mSavedIsbn = isbn;
     }
 
     // Clear search field and result widgets
     private void clearWidgets() {
+        Log.d(TAG, "clearWidgets()");
         mIsbnTextView.setText("");
         mTitleTextView.setText("");
         mSubTitleTextView.setText("");
@@ -382,11 +385,12 @@ public class AddBookFragment extends DialogFragment
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
         Log.d(TAG, "onActivityResult()");
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult scan = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+        String scanResult = (scan == null)? "null" : scan.getContents();
+        Log.d(TAG, "onActivityResult() - ISBN code scanner returned: " + scanResult);
 
         if (scan != null) {
             mIsbnTextView.setText(scan.getContents());
@@ -395,12 +399,19 @@ public class AddBookFragment extends DialogFragment
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState");
+        Log.d(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
+
+        // TEST: save cursor so widgets can be loaded with the cursors's data upon screen rotation
+        if (mBookData != null) {
+            Log.d(TAG, "onSaveInstanceState() - mBookData saved");
+            outState.putParcelable(STATE_BOOK_DATA, mBookData);
+        }
     }
 
     @Override
     public void onPause() {
+        Log.d(TAG, "onPause()");
         super.onPause();
 
         if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
@@ -413,13 +424,16 @@ public class AddBookFragment extends DialogFragment
     @Override
     public void onDestroyView() {
         Log.d(TAG, "onDestroyView()");
-        /*if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
-            mCallbacks.notifyBookSelected(mSavedIsbn);
-        }*/
 
         if (getDialog() != null && getRetainInstance()) {
             getDialog().setDismissMessage(null);
         }
         super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+        super.onDestroy();
     }
 }

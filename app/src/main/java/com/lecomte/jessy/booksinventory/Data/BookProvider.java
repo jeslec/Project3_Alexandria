@@ -10,6 +10,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Created by saj on 24/12/14.
  */
@@ -156,9 +160,6 @@ public class BookProvider extends ContentProvider {
                         AlexandriaContract.BookEntry.TABLE_NAME + "." + AlexandriaContract.BookEntry._ID,
                         null,
                         sortOrder);
-                // Notify the listeners (e.g. cursor loaders) the data has changed JESSY
-                /*Log.d(TAG, "Calling notifyChange() - Uri: " + uri);
-                getContext().getContentResolver().notifyChange(uri, null);*/
                 break;
             case BOOK_FULL:
                 String[] bf_projection ={
@@ -174,9 +175,6 @@ public class BookProvider extends ContentProvider {
                         AlexandriaContract.BookEntry.TABLE_NAME + "." + AlexandriaContract.BookEntry._ID,
                         null,
                         sortOrder);
-                // Notify the listeners (e.g. cursor loaders) the data has changed JESSY
-                /*Log.d(TAG, "Calling notifyChange() - Uri: " + uri);
-                getContext().getContentResolver().notifyChange(uri, null);*/
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -213,6 +211,23 @@ public class BookProvider extends ContentProvider {
         }
     }
 
+    public void printContentValues(ContentValues vals)
+    {
+        Set<Map.Entry<String, Object>> s=vals.valueSet();
+        Iterator itr = s.iterator();
+
+        Log.d("DatabaseSync", "ContentValue Length :: " +vals.size());
+
+        while(itr.hasNext())
+        {
+            Map.Entry me = (Map.Entry)itr.next();
+            String key = me.getKey().toString();
+            Object value =  me.getValue();
+
+            Log.d("DatabaseSync", "Key:"+key+", values:"+(String)(value == null?null:value.toString()));
+        }
+    }
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         Log.d(TAG, "insert() - Uri: " + uri);
@@ -221,6 +236,9 @@ public class BookProvider extends ContentProvider {
         Uri returnUri;
         switch (match) {
             case BOOK: {
+                Log.d(TAG, "insert() - INSERT INTO Books VALUES...");
+                printContentValues(values);
+
                 long _id = db.insert(AlexandriaContract.BookEntry.TABLE_NAME, null, values);
                 if ( _id > 0 ){
                     returnUri = AlexandriaContract.BookEntry.buildBookUri(_id);
@@ -236,6 +254,9 @@ public class BookProvider extends ContentProvider {
                 break;
             }
             case AUTHOR:{
+                Log.d(TAG, "insert() - INSERT INTO Authors VALUES...");
+                printContentValues(values);
+
                 long _id = db.insert(AlexandriaContract.AuthorEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
                     returnUri = AlexandriaContract.AuthorEntry.buildAuthorUri(values.getAsLong("_id"));
@@ -244,6 +265,9 @@ public class BookProvider extends ContentProvider {
                 break;
             }
             case CATEGORY: {
+                Log.d(TAG, "insert() - INSERT INTO Categories VALUES...");
+                printContentValues(values);
+
                 long _id = db.insert(AlexandriaContract.CategoryEntry.TABLE_NAME, null, values);
                 if (_id > 0)
                     returnUri = AlexandriaContract.CategoryEntry.buildCategoryUri(values.getAsLong("_id"));

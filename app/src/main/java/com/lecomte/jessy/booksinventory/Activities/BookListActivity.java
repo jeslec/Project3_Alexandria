@@ -99,11 +99,6 @@ public class BookListActivity extends AppCompatActivity
                     .setActivateOnItemClick(true);
         }
 
-        // Register to receive messages from the BookService
-        mMessageReceiver = new MessageReceiver();
-        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
-
         // TODO: If exposing deep links into your app, handle intents here.
     }
 
@@ -390,5 +385,22 @@ public class BookListActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Register to receive messages from the BookService
+        mMessageReceiver = new MessageReceiver();
+        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 }

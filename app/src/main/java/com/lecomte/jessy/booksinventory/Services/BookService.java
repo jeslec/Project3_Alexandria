@@ -113,6 +113,7 @@ public class BookService extends IntentService {
     }
 
     private void sendCommandResultToClient(String command, int result, String isbn) {
+        Log.d(TAG, "sendCommandResultToClient() - ISBN: " + isbn);
         Intent intent = new Intent(MESSAGE);
         intent.putExtra(EXTRA_COMMAND, command);
         intent.putExtra(EXTRA_RESULT, result);

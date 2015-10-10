@@ -18,6 +18,14 @@ public class BookData implements Parcelable {
     public BookData() {
     }
 
+    public BookData(String title, String subTitle, String authors, String categories, String imageUrl) {
+        mTitle = title;
+        mSubTitle = subTitle;
+        mAuthors = authors;
+        mCategories = categories;
+        mImageUrl = imageUrl;
+    }
+
     public String getId() {
         return Id;
     }
