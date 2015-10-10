@@ -12,7 +12,6 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,6 +41,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     private TextView mSubTitleTextView;
     private ImageView mImageView;
     private TextView mDescriptionTextView;
+    private TextView mAuthorTextView;
+    private TextView mCategoryTextView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -92,6 +93,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mSubTitleTextView = (TextView) rootView.findViewById(R.id.book_detail_SubTitle);
         mImageView = (ImageView) rootView.findViewById(R.id.book_detail_Image);
         mDescriptionTextView = (TextView) rootView.findViewById(R.id.book_detail_Description);
+        mAuthorTextView = (TextView) rootView.findViewById(R.id.book_detail_Authors);
+        mCategoryTextView = (TextView)rootView.findViewById(R.id.book_detail_Categories);
 
         clearWidgets();
 
@@ -118,15 +121,29 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
             return;
         }
 
+        // Title
         String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
         mTitleTextView.setText(bookTitle);
 
+        // SubTitle
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
         mSubTitleTextView.setText(bookSubTitle);
 
+        // Description
         String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
         mDescriptionTextView.setText(desc);
 
+        // Authors
+        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String[] authorsArr = authors.split(",");
+        mAuthorTextView.setLines(authorsArr.length);
+        mAuthorTextView.setText(authors.replace(",","\n"));
+
+        // Categories
+        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        mCategoryTextView.setText(categories);
+
+        // Image
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
 
         if (Patterns.WEB_URL.matcher(imgUrl).matches()) {

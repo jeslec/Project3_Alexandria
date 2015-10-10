@@ -23,4 +23,8 @@
 
     <!-- Details view -->
     <dimen name="book_detail_image_right_margin">10dp</dimen>
+    <dimen name="book_detail_horiz_container_top_margin">10dp</dimen>
+    <dimen name="book_detail_description_marginTop">12dp</dimen>
+    <dimen name="book_detail_authors_marginTop">16dp</dimen>
+    <dimen name="book_detail_title_marginTop">8dp</dimen>
 </resources>
