@@ -19,9 +19,7 @@
 
     <!-- Book detail screen -->
     <string name="book_detail_ShareButton">Share</string>
-    <string name="book_added_to_library">Book added to your library</string>
     <string name="book_already_in_library">This book is already in your library</string>
-    <string name="book_deleted">The book was deleted</string>
     <string name="book_not_deleted">The book could not be deleted</string>
     <string name="book_not_found">Book not found</string>
     <string name="book_not_selected">You must first select a book from the list</string>

@@ -1,6 +1,7 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -111,18 +113,32 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Deleting book...", Toast.LENGTH_SHORT).show();
 
                 if (mTwoPaneLayout) {
                     mCallbacks.loadDeleteBookConfirmationView();
                     return;
                 }
 
-                // Single-pane layout
+                // Single-pane layout: ask user to confirm his book deletion request
                 else {
-                    Intent deleteBookIntent = new Intent(INTENT_ACTION_DELETE_BOOK);
-                    deleteBookIntent.setClass(getActivity(), BookListActivity.class);
-                    startActivity(deleteBookIntent);
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Delete Book")
+                            .setMessage("Are you sure you want to delete this book?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with delete
+                                    Intent deleteBookIntent = new Intent(INTENT_ACTION_DELETE_BOOK);
+                                    deleteBookIntent.setClass(getActivity(), BookListActivity.class);
+                                    startActivity(deleteBookIntent);
+                                }
+                            })
+                            /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            })*/
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }
             }
         });

@@ -186,8 +186,6 @@ public class BookListActivity extends AppCompatActivity
                     if (mTwoPane) {
                         Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                         notifyAddBookFragmentToLoadBookData();
-                        Toast.makeText(BookListActivity.this, getResources()
-                                .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -212,8 +210,6 @@ public class BookListActivity extends AppCompatActivity
 
                 if (result == BookService.DELETE_RESULT_DELETED) {
                     Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_DELETED");
-                    Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_deleted), Toast.LENGTH_SHORT).show();
                 }
 
                 else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
@@ -372,7 +368,6 @@ public class BookListActivity extends AppCompatActivity
 
         // We have received a request, sent by an activity, to delete the selected book
         if (intent.getAction() == BookDetailFragment.INTENT_ACTION_DELETE_BOOK) {
-            Toast.makeText(this, "Delete book action received", Toast.LENGTH_SHORT).show();
             onDeleteBookRequest();
         }
     }
