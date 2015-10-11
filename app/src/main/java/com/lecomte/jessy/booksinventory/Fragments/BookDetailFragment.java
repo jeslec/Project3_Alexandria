@@ -122,6 +122,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
 
                 // Single-pane layout: ask user to confirm his book deletion request
                 else {
+                    // http://stackoverflow.com/questions/2115758/how-to-display-alert-dialog-in-android
                     new AlertDialog.Builder(getActivity())
                             .setTitle("Delete Book")
                             .setMessage("Are you sure you want to delete this book?")

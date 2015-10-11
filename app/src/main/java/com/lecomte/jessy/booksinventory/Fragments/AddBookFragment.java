@@ -420,4 +420,11 @@ public class AddBookFragment extends DialogFragment
         }
         super.onDestroyView();
     }
+
+    public void shareBook() {
+        Intent shareBookIntent = new Intent(Intent.ACTION_SEND);
+        shareBookIntent.putExtra(Intent.EXTRA_TEXT, mTitleTextView.getText());
+        shareBookIntent.setType("text/plain");
+        startActivity(shareBookIntent);
+    }
 }

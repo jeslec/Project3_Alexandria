@@ -37,14 +37,17 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-       /* FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (getHostedFragment() != null) {
+                    getHostedFragment().shareBook();
+                }
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
-        });*/
+        });
     }
 
     @Override
@@ -59,6 +62,7 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
         // Register to receive messages from the BookService
         mMessageReceiver = new MessageReceiver();
         IntentFilter filter = new IntentFilter(BookService.MESSAGE);
+        // http://stackoverflow.com/questions/16616654/registering-and-unregistering-broadcastreceiver-in-a-fragment
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
     }
 
@@ -75,6 +79,11 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
         if (addFragment != null) {
             addFragment.loadBookData();
         }
+    }
+
+    private AddBookFragment getHostedFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        return (AddBookFragment)fragmentManager.findFragmentById(R.id.fragment_add_book);
     }
 
     // Good tutorial on broadcast receivers:
@@ -101,9 +110,7 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                     loadBookData();
-                }
-
-                else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
+                } else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
                     loadBookData();
                 }
