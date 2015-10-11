@@ -50,18 +50,29 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:layout_weight="50"
-            android:gravity="center_vertical">
+            android:gravity="center">
 
             <TextView
                 android:id="@+id/book_detail_Authors"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/book_detail_Categories"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
                 android:layout_marginTop="@dimen/book_detail_authors_marginTop"/>
+
+            <ImageButton
+                android:id="@+id/book_detail_DeleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/ic_menu_delete"
+                android:layout_marginTop="@dimen/book_detail_deleteButton_marginTop"/>
 
         </LinearLayout>
 

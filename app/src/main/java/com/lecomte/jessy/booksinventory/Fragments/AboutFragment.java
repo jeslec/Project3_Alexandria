@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.R;
 
@@ -24,7 +25,6 @@ import com.lecomte.jessy.booksinventory.R;
 public class AboutFragment extends DialogFragment {
 
     public static final String TAG = AboutFragment.class.getSimpleName();
-    public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
 
     private float mWidthMultiplier = 1;
     private float mHeightMultiplier = 1;
@@ -37,7 +37,7 @@ public class AboutFragment extends DialogFragment {
 
     public static AboutFragment newInstance(boolean twoPane) {
         Bundle args = new Bundle();
-        args.putBoolean(EXTRA_BOOL_2PANE, twoPane);
+        args.putBoolean(BookListActivity.EXTRA_BOOL_2PANE, twoPane);
         AboutFragment fragment = new AboutFragment();
         fragment.setArguments(args);
         return fragment;
@@ -53,10 +53,10 @@ public class AboutFragment extends DialogFragment {
 
         // Get arguments attached to this fragment (if any)
         if (fragmentArguments != null) {
-            mTwoPaneLayout = fragmentArguments.getBoolean(EXTRA_BOOL_2PANE);
+            mTwoPaneLayout = fragmentArguments.getBoolean(BookListActivity.EXTRA_BOOL_2PANE);
             Log.d(TAG, "onCreate() - Intent arguments received [2-pane layout: " + mTwoPaneLayout + "]");
         } else if (intent != null) {
-            mTwoPaneLayout = intent.getBooleanExtra(EXTRA_BOOL_2PANE, false);
+            mTwoPaneLayout = intent.getBooleanExtra(BookListActivity.EXTRA_BOOL_2PANE, false);
             Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
         }
 

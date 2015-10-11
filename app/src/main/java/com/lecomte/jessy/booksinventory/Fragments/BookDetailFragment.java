@@ -1,5 +1,6 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -12,12 +13,16 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.Activities.BookDetailActivity;
 import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
+import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
@@ -35,6 +40,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     public static final String ARG_ITEM_ID = "item_id";
     private static final String TAG = BookDetailFragment.class.getSimpleName();
     private static final int LOADER_ID = 11;
+    public static final String INTENT_ACTION_DELETE_BOOK = BuildConfig.APPLICATION_ID +
+            ".INTENT_ACTION_DELETE_BOOK";
 
     private String mItemIsbn;
     private TextView mTitleTextView;
@@ -43,6 +50,9 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     private TextView mDescriptionTextView;
     private TextView mAuthorTextView;
     private TextView mCategoryTextView;
+    private ImageView mDeleteButton;
+    private boolean mTwoPaneLayout = false;
+    private Callbacks mCallbacks = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -57,7 +67,6 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-
             mItemIsbn = getArguments().getString(ARG_ITEM_ID);
 
             /*Activity activity = this.getActivity();
@@ -66,6 +75,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                 appBarLayout.setTitle(mItem.content);
             }*/
         }
+
+        mTwoPaneLayout = Utility.isTwoPaneLayout(getActivity());
     }
 
     @Override
@@ -94,7 +105,27 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mImageView = (ImageView) rootView.findViewById(R.id.book_detail_Image);
         mDescriptionTextView = (TextView) rootView.findViewById(R.id.book_detail_Description);
         mAuthorTextView = (TextView) rootView.findViewById(R.id.book_detail_Authors);
-        mCategoryTextView = (TextView)rootView.findViewById(R.id.book_detail_Categories);
+        mCategoryTextView = (TextView) rootView.findViewById(R.id.book_detail_Categories);
+        mDeleteButton = (ImageButton) rootView.findViewById(R.id.book_detail_DeleteButton);
+
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Deleting book...", Toast.LENGTH_SHORT).show();
+
+                if (mTwoPaneLayout) {
+                    mCallbacks.loadDeleteBookConfirmationView();
+                    return;
+                }
+
+                // Single-pane layout
+                else {
+                    Intent deleteBookIntent = new Intent(INTENT_ACTION_DELETE_BOOK);
+                    deleteBookIntent.setClass(getActivity(), BookListActivity.class);
+                    startActivity(deleteBookIntent);
+                }
+            }
+        });
 
         clearWidgets();
 
@@ -167,5 +198,30 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         shareBookIntent.putExtra(Intent.EXTRA_TEXT, mTitleTextView.getText());
         shareBookIntent.setType("text/plain");
         startActivity(shareBookIntent);
+    }
+
+    // Container Activity must implement this interface
+    public interface Callbacks {
+        public void loadDeleteBookConfirmationView();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Activities containing this fragment must implement its callbacks.
+        if (!(activity instanceof Callbacks)) {
+            throw new IllegalStateException("Activity must implement fragment's callbacks.");
+        }
+
+        mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        // Reset the active callbacks interface to the dummy implementation.
+        mCallbacks = null;
     }
 }

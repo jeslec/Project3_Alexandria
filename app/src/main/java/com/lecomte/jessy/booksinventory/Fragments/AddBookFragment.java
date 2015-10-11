@@ -2,7 +2,10 @@ package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +14,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -44,7 +48,6 @@ public class AddBookFragment extends DialogFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String TAG = AddBookFragment.class.getSimpleName();
-    public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
     private static final int LOADER_ID = 30;
 
     // Saved instance states
@@ -72,11 +75,8 @@ public class AddBookFragment extends DialogFragment
     public AddBookFragment() {
     }
 
-    public static AddBookFragment newInstance(boolean twoPane) {
-        Bundle args = new Bundle();
-        args.putBoolean(EXTRA_BOOL_2PANE, twoPane);
+    public static AddBookFragment newInstance() {
         AddBookFragment fragment = new AddBookFragment();
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -170,17 +170,7 @@ public class AddBookFragment extends DialogFragment
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
-        Bundle fragmentArguments = getArguments();
-        Intent intent = getActivity().getIntent();
-
-        // Get arguments attached to this fragment (if any)
-        if (fragmentArguments != null) {
-            mTwoPaneLayout = fragmentArguments.getBoolean(EXTRA_BOOL_2PANE);
-            Log.d(TAG, "onCreate() - Intent arguments received [2-pane layout: " + mTwoPaneLayout + "]");
-        } else if (intent != null) {
-            mTwoPaneLayout = intent.getBooleanExtra(EXTRA_BOOL_2PANE, false);
-            Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
-        }
+        mTwoPaneLayout = Utility.isTwoPaneLayout(getActivity());
 
         //Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
         // Maintain states between configuration changes (phone rotations, etc.)
@@ -399,8 +389,8 @@ public class AddBookFragment extends DialogFragment
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState()");
 
         // TEST: save cursor so widgets can be loaded with the cursors's data upon screen rotation
         if (mBookData != null) {
@@ -429,11 +419,5 @@ public class AddBookFragment extends DialogFragment
             getDialog().setDismissMessage(null);
         }
         super.onDestroyView();
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy()");
-        super.onDestroy();
     }
 }

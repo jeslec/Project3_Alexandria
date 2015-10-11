@@ -5,17 +5,23 @@ package com.lecomte.jessy.booksinventory.Other;
  */
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
+
+import com.lecomte.jessy.booksinventory.R;
 
 /**
  * Created by Jessy on 2015-09-22.
  */
 public class Utility {
+
+    private static final String TAG = Utility.class.getSimpleName();
 
     // Check if app has access to Internet either using Wifi or Mobile
     // Returns:
@@ -28,5 +34,16 @@ public class Utility {
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
+    // Return true if app is using a 2-pane layout
+    public static boolean isTwoPaneLayout(Context context) {
+        boolean bTwoPane = false;
+        try {
+            bTwoPane = context.getResources().getBoolean(R.bool.twoPaneLayout);
+        } catch (Resources.NotFoundException e) {
+            // An exception means there is no value in file so it's a 1-pane layout
+            Log.d(TAG, "isTwoPaneLayout() - NotFoundException!");
+        }
+        return bTwoPane;
+    }
 }
 

@@ -23,7 +23,7 @@ import com.lecomte.jessy.booksinventory.R;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link BookDetailFragment}.
  */
-public class BookDetailActivity extends AppCompatActivity {
+public class BookDetailActivity extends AppCompatActivity implements BookDetailFragment.Callbacks {
 
     private FloatingActionButton mShareFloatingActionButton;
 
@@ -69,6 +69,7 @@ public class BookDetailActivity extends AppCompatActivity {
             Bundle arguments = new Bundle();
             arguments.putString(BookDetailFragment.ARG_ITEM_ID,
                     getIntent().getStringExtra(BookDetailFragment.ARG_ITEM_ID));
+            //arguments.putBoolean(BookListActivity.EXTRA_BOOL_2PANE, getIntent().getBooleanExtra());
             BookDetailFragment fragment = new BookDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -92,5 +93,10 @@ public class BookDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void loadDeleteBookConfirmationView() {
+
     }
 }

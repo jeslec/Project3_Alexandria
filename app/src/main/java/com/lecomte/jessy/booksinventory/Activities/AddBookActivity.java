@@ -1,19 +1,30 @@
 package com.lecomte.jessy.booksinventory.Activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import com.journeyapps.barcodescanner.Util;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
+import com.lecomte.jessy.booksinventory.Services.BookService;
 
 public class AddBookActivity extends AppCompatActivity implements AddBookFragment.Callbacks {
 
     private static final String TAG = AddBookActivity.class.getSimpleName();
+
+    private MessageReceiver mMessageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,5 +46,97 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
     @Override
     public void notifyBookSelected(String isbn) {
         Log.d(TAG, "notifyBookSelected");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Register to receive messages from the BookService
+        mMessageReceiver = new MessageReceiver();
+        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    }
+
+    // Good tutorial on broadcast receivers:
+    //http://www.vogella.com/tutorials/AndroidServices/article.html#servicecommunication_receiver
+    // Receive messages from BookService
+    private class MessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "MessageReceiver#onReceive()");
+
+            if (intent == null || !intent.hasExtra(BookService.EXTRA_COMMAND) ||
+                    !intent.hasExtra(BookService.EXTRA_RESULT)) {
+                Log.e(TAG, "MessageReceiver() - One of the params sent by the service is invalid");
+                return;
+            }
+
+            String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
+            int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
+            String isbn = intent.getStringExtra(BookService.EXTRA_ISBN);
+
+            if (command == BookService.FETCH_BOOK) {
+                Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
+
+                if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
+
+                    FragmentManager fm = getSupportFragmentManager();
+                    AddBookFragment addFragment = (AddBookFragment)fm.findFragmentById(R.id.fragment_add_book);
+
+                    if (addFragment != null) {
+                        addFragment.loadBookData();
+                    }
+                }
+
+                else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
+                    FragmentManager fm = getSupportFragmentManager();
+                    AddBookFragment addFragment = (AddBookFragment)fm.findFragmentById(R.id.fragment_add_book);
+
+                    if (addFragment != null) {
+                        addFragment.loadBookData();
+                    }
+                    //loadBookData();
+                    /*notifyAddBookFragmentToLoadBookData();
+                    Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();*/
+                }
+
+                else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
+                    /*Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_not_found), Toast.LENGTH_SHORT).show();*/
+                }
+            }
+
+            else if (command == BookService.DELETE_BOOK) {
+                Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
+
+                if (result == BookService.DELETE_RESULT_DELETED) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_DELETED");
+                    /*Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_deleted), Toast.LENGTH_SHORT).show();*/
+                }
+
+                else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
+                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_NOT_DELETED");
+                    /*Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_not_deleted), Toast.LENGTH_SHORT).show();*/
+                }
+            }
+
+            /*if (intent.getStringExtra(MESSAGE_KEY)!=null){
+                Toast.makeText(BookListActivity.this, intent.getStringExtra(MESSAGE_KEY),
+                        Toast.LENGTH_LONG).show();
+            }*/
+        }
     }
 }

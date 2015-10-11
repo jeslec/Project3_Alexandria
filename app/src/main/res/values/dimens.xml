@@ -27,4 +27,5 @@
     <dimen name="book_detail_description_marginTop">12dp</dimen>
     <dimen name="book_detail_authors_marginTop">16dp</dimen>
     <dimen name="book_detail_title_marginTop">8dp</dimen>
+    <dimen name="book_detail_deleteButton_marginTop">16dp</dimen>
 </resources>

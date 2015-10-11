@@ -5,11 +5,15 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
+import com.lecomte.jessy.booksinventory.Fragments.DeleteBookFragment;
 import com.lecomte.jessy.booksinventory.R;
 
-public class DeleteBookActivity extends AppCompatActivity {
+public class DeleteBookActivity extends AppCompatActivity implements DeleteBookFragment.Callbacks {
+
+    private static final String TAG = DeleteBookActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,4 +32,8 @@ public class DeleteBookActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onDeleteBookRequest() {
+        Log.d(TAG, "onDeleteBookRequest()");
+    }
 }

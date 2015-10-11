@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 
 /**
@@ -27,7 +28,6 @@ import com.lecomte.jessy.booksinventory.R;
  */
 public class DeleteBookFragment extends DialogFragment {
     public static final String TAG = AddBookFragment.class.getSimpleName();
-    public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
 
     private float mWidthMultiplier = 1;
     private float mHeightMultiplier = 1;
@@ -40,11 +40,8 @@ public class DeleteBookFragment extends DialogFragment {
     public DeleteBookFragment() {
     }
 
-    public static DeleteBookFragment newInstance(boolean twoPane) {
-        Bundle args = new Bundle();
-        args.putBoolean(EXTRA_BOOL_2PANE, twoPane);
+    public static DeleteBookFragment newInstance() {
         DeleteBookFragment fragment = new DeleteBookFragment();
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -74,20 +71,9 @@ public class DeleteBookFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-
         setRetainInstance(true);
 
-        Bundle fragmentArguments = getArguments();
-        Intent intent = getActivity().getIntent();
-
-        // Get arguments attached to this fragment (if any)
-        if (fragmentArguments != null) {
-            mTwoPaneLayout = fragmentArguments.getBoolean(EXTRA_BOOL_2PANE);
-            Log.d(TAG, "onCreate() - Intent arguments received [2-pane layout: " + mTwoPaneLayout + "]");
-        } else if (intent != null) {
-            mTwoPaneLayout = intent.getBooleanExtra(EXTRA_BOOL_2PANE, false);
-            Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
-        }
+        mTwoPaneLayout = Utility.isTwoPaneLayout(getActivity());
 
         //Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
         // Maintain states between configuration changes (phone rotations, etc.)

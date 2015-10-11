@@ -17,11 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
 import com.lecomte.jessy.booksinventory.Fragments.DeleteBookFragment;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 
@@ -45,9 +47,11 @@ import com.lecomte.jessy.booksinventory.Services.BookService;
 public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks,
         AddBookFragment.Callbacks,
-        DeleteBookFragment.Callbacks {
+        DeleteBookFragment.Callbacks,
+        BookDetailFragment.Callbacks {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
+    public static final String EXTRA_BOOL_2PANE = BuildConfig.APPLICATION_ID + ".EXTRA_BOOL_2PANE";
 
     private BroadcastReceiver mMessageReceiver;
 
@@ -61,6 +65,7 @@ public class BookListActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_app_bar);
 
@@ -85,7 +90,9 @@ public class BookListActivity extends AppCompatActivity
             }
         });
 
-        if (findViewById(R.id.book_detail_container) != null) {
+        // An alternative way of determining if it's a 2-pane layout would have been to
+        // look for the Id of the details fragment's container (R.id.book_detail_container)
+        if (Utility.isTwoPaneLayout(this)) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-large and
             // res/values-sw600dp). If this view is present, then the
@@ -99,7 +106,10 @@ public class BookListActivity extends AppCompatActivity
                     .setActivateOnItemClick(true);
         }
 
-        // TODO: If exposing deep links into your app, handle intents here.
+        // Register to receive messages from the BookService
+        mMessageReceiver = new MessageReceiver();
+        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
     }
 
     private BookListFragment getBookListFragment() {
@@ -109,7 +119,7 @@ public class BookListActivity extends AppCompatActivity
 
     private void notifyAddBookFragmentToLoadBookData() {
         FragmentManager fm = getSupportFragmentManager();
-        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentByTag(AddBookFragment.TAG);
+        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentById(R.id.fragment_add_book);
 
         if (addFragment != null) {
             addFragment.loadBookData();
@@ -173,17 +183,21 @@ public class BookListActivity extends AppCompatActivity
                 Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
-                    notifyAddBookFragmentToLoadBookData();
-                    Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
+                    if (mTwoPane) {
+                        Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
+                        notifyAddBookFragmentToLoadBookData();
+                        Toast.makeText(BookListActivity.this, getResources()
+                                .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
-                    notifyAddBookFragmentToLoadBookData();
-                    Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();
+                    if (mTwoPane) {
+                        Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
+                        notifyAddBookFragmentToLoadBookData();
+                        Toast.makeText(BookListActivity.this, getResources()
+                                .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
@@ -249,13 +263,13 @@ public class BookListActivity extends AppCompatActivity
         if (mTwoPane) {
             AddBookFragment fragment = null;
             FragmentManager fragMgr = getSupportFragmentManager();
-            fragment = (AddBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+            fragment = (AddBookFragment) fragMgr.findFragmentById(R.id.fragment_add_book);
 
             FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
 
             if (fragment == null) {
                 Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
-                fragment = AddBookFragment.newInstance(mTwoPane);
+                fragment = AddBookFragment.newInstance();
                 fragmentTransaction.add(fragment, AddBookFragment.TAG);
             } else {
                 Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
@@ -265,32 +279,30 @@ public class BookListActivity extends AppCompatActivity
             fragmentTransaction.commit();
         } else {
             Intent intent = new Intent(this, AddBookActivity.class);
-            intent.putExtra(AddBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
             startActivity(intent);
         }
     }
 
-    private void loadDeleteBookConfirmationView() {
+    public void loadDeleteBookConfirmationView() {
         if (mTwoPane) {
             DeleteBookFragment fragment = null;
             FragmentManager fragMgr = getSupportFragmentManager();
-            fragment = (DeleteBookFragment) fragMgr.findFragmentByTag(AddBookFragment.TAG);
+            fragment = (DeleteBookFragment) fragMgr.findFragmentById(R.id.fragment_add_book);
 
             FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
 
             if (fragment == null) {
-                Log.d(TAG, "AddBookActivityFragment not found, creating a new one and putting it in layout");
-                fragment = DeleteBookFragment.newInstance(mTwoPane);
+                Log.d(TAG, "DeleteBookFragment not found, creating a new one and putting it in layout");
+                fragment = DeleteBookFragment.newInstance();
                 fragmentTransaction.add(fragment, DeleteBookFragment.TAG);
             } else {
-                Log.d(TAG, "AddBookActivityFragment found, putting it in layout...");
+                Log.d(TAG, "DeleteBookFragment found, putting it in layout...");
                 fragmentTransaction.remove(fragment)
                         .add(fragment, DeleteBookFragment.TAG);
             }
             fragmentTransaction.commit();
         } else {
             Intent intent = new Intent(this, DeleteBookActivity.class);
-            intent.putExtra(DeleteBookFragment.EXTRA_BOOL_2PANE, mTwoPane);
             startActivity(intent);
         }
     }
@@ -299,7 +311,7 @@ public class BookListActivity extends AppCompatActivity
         if (mTwoPane) {
             AboutFragment fragment = null;
             FragmentManager fragMgr = getSupportFragmentManager();
-            fragment = (AboutFragment) fragMgr.findFragmentByTag(AboutFragment.TAG);
+            fragment = (AboutFragment) fragMgr.findFragmentById(R.id.fragment_about);
 
             FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
 
@@ -315,7 +327,7 @@ public class BookListActivity extends AppCompatActivity
             fragmentTransaction.commit();
         } else {
             Intent intent = new Intent(this, AboutActivity.class);
-            intent.putExtra(AboutFragment.EXTRA_BOOL_2PANE, mTwoPane);
+            intent.putExtra(BookListActivity.EXTRA_BOOL_2PANE, mTwoPane);
             startActivity(intent);
         }
     }
@@ -345,6 +357,24 @@ public class BookListActivity extends AppCompatActivity
 
         //  Must call this so the menu gets updated right away
         invalidateOptionsMenu();
+    }
+
+    // Receive messages sent by activities when app running in a single layout
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        if (intent == null || intent.getAction() == null) {
+            Log.d(TAG, "onNewIntent() - Intent or intent action is null!");
+            return;
+        }
+
+        // We have received a request, sent by an activity, to delete the selected book
+        if (intent.getAction() == BookDetailFragment.INTENT_ACTION_DELETE_BOOK) {
+            Toast.makeText(this, "Delete book action received", Toast.LENGTH_SHORT).show();
+            onDeleteBookRequest();
+        }
     }
 
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -403,19 +433,9 @@ public class BookListActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        // Register to receive messages from the BookService
-        mMessageReceiver = new MessageReceiver();
-        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy()");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onDestroy();
     }
 }
