@@ -95,6 +95,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mSubTitleTextView.setText("");
         mDescriptionTextView.setText("");
         mImageView.setVisibility(View.INVISIBLE);
+        mDeleteButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -197,6 +198,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
             new DownloadImage(mImageView).execute(imgUrl);
             mImageView.setVisibility(View.VISIBLE);
         }
+
+        mDeleteButton.setVisibility(View.VISIBLE);
     }
 
     @Override

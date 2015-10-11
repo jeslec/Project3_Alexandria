@@ -186,6 +186,8 @@ public class BookListActivity extends AppCompatActivity
                     if (mTwoPane) {
                         Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                         notifyAddBookFragmentToLoadBookData();
+                        Toast.makeText(BookListActivity.this, getResources()
+                                .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
                     }
                 }
 

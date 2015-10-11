@@ -2,15 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@color/colorPrimary">
+              android:layout_height="match_parent">
 
+    <!-- Title bar with search box, clear search button and scan button -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:padding="@dimen/dialog_horizontal_margin">
+        android:padding="@dimen/dialog_horizontal_margin"
+        android:background="@color/colorPrimary">
 
         <TextView
             android:layout_width="wrap_content"
@@ -18,7 +19,6 @@
             android:id="@+id/textView"
             android:text="@string/add_book_title"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
-
 
         <LinearLayout
             android:orientation="horizontal"
@@ -54,52 +54,80 @@
 
     </LinearLayout>
 
+    <!-- Book data section -->
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:background="#ffffff"
-        android:padding="@dimen/dialog_horizontal_margin">
+        android:orientation="vertical"
+        android:layout_margin="16dp">
 
-        <ImageView
+        <!-- Book Title -->
+        <TextView
+            android:id="@+id/book_title_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/book_image"/>
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginTop="@dimen/book_detail_title_marginTop"/>
 
+        <!-- Book SubTitle -->
+        <TextView
+            android:id="@+id/book_subtitle_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- 2-parts section -->
         <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dialog_horizontal_margin">
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:orientation="horizontal"
+            android:weightSum="100"
+            android:layout_marginTop="10dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/book_title_textView"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#000000"/>
+            <!-- Left section: 50% of width -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="50"
+                android:orientation="vertical"
+                android:layout_marginRight="@dimen/book_detail_image_right_margin"
+                android:gravity="top">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/book_subtitle_textView"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#000000"/>
+                <!-- Book Image -->
+                <ImageView
+                    android:id="@+id/book_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/author_textView"
-                android:textColor="#000000"/>
+            <!-- Right section: 50% of width -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="50"
+                android:gravity="center">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/category_textView"
-                android:textColor="#000000"/>
+                <!-- Book Authors -->
+                <TextView
+                    android:id="@+id/author_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"/>
+
+                <!-- Book Categories -->
+                <TextView
+                    android:id="@+id/category_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/book_detail_authors_marginTop"/>
+            </LinearLayout>
+
         </LinearLayout>
+
     </LinearLayout>
+
 </LinearLayout>
