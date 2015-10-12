@@ -67,7 +67,6 @@ public class BookDetailActivity extends AppCompatActivity implements BookDetailF
             Bundle arguments = new Bundle();
             arguments.putString(BookDetailFragment.ARG_ITEM_ID,
                     getIntent().getStringExtra(BookDetailFragment.ARG_ITEM_ID));
-            //arguments.putBoolean(BookListActivity.EXTRA_BOOL_2PANE, getIntent().getBooleanExtra());
             BookDetailFragment fragment = new BookDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

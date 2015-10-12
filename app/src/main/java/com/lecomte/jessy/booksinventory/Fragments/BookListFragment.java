@@ -17,6 +17,7 @@ import android.widget.ListView;
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 
 /**
@@ -35,14 +36,12 @@ public class BookListFragment extends ListFragment
     private static final String SELECTED_ITEM_INDEX = BuildConfig.APPLICATION_ID + ".SELECTED_ITEM_INDEX";
     private final int LOADER_ID = 10;
 
-    /**
-     * The fragment's current callback object, which is notified of list item
-     * clicks.
-     */
     private Callbacks mCallbacks = null;
-
     private BookListAdapter mBookListAdapter;
+
+    // Initially, the list is empty so there is no item selected
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
+
     private boolean mDeleteBookInProgress = false;
 
     @Override

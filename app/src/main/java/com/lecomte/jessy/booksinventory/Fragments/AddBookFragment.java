@@ -15,7 +15,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.lecomte.jessy.booksinventory.BuildConfig;
@@ -35,7 +35,6 @@ import com.lecomte.jessy.booksinventory.Data.BookData;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
-import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -121,11 +120,8 @@ public class AddBookFragment extends DialogFragment
 
         // Image URL
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-
-        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
-            new DownloadImage(mBookImage).execute(imgUrl);
-            mBookImage.setVisibility(View.VISIBLE);
-        }
+        Glide.with(this).load(imgUrl).into(mBookImage);
+        mBookImage.setVisibility(View.VISIBLE);
 
         // Save book info so we can reuse it when there's a configuration change
         mBookData = new BookData(bookTitle, bookSubTitle, mAuthorTextView.getText().toString(),
@@ -279,12 +275,9 @@ public class AddBookFragment extends DialogFragment
                     mCategoryTextView.setText(mBookData.getCategories());
 
                     String imageUrl = mBookData.getImageUrl();
+                    Glide.with(AddBookFragment.this).load(imageUrl).into(mBookImage);
+                    mBookImage.setVisibility(View.VISIBLE);
 
-                    //TODO: save image so we don't have to download it every time
-                    if (Patterns.WEB_URL.matcher(imageUrl).matches()) {
-                        new DownloadImage(mBookImage).execute(imageUrl);
-                        mBookImage.setVisibility(View.VISIBLE);
-                    }
                     mConfigurationChanged = false;
                     return;
                 }

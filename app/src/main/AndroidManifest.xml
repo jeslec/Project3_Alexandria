@@ -43,12 +43,6 @@
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
 
-        <activity
-            android:name=".Activities.DeleteBookActivity"
-            android:label="@string/delete_book_dialog_title"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
-
         <provider
             android:name=".Data.BookProvider"
             android:authorities="it.jaschke.alexandria"

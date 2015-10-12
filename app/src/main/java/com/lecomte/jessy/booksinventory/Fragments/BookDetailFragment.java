@@ -11,22 +11,20 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.lecomte.jessy.booksinventory.Activities.BookDetailActivity;
 import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
-import com.lecomte.jessy.booksinventory.Services.DownloadImage;
 
 /**
  * A fragment representing a single Book detail screen.
@@ -196,11 +194,8 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
 
         // Image
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-
-        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
-            new DownloadImage(mImageView).execute(imgUrl);
-            mImageView.setVisibility(View.VISIBLE);
-        }
+        Glide.with(this).load(imgUrl).into(mImageView);
+        mImageView.setVisibility(View.VISIBLE);
 
         if (mDeleteButton != null) {
             mDeleteButton.setVisibility(View.VISIBLE);

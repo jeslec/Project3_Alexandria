@@ -2,16 +2,13 @@ package com.lecomte.jessy.booksinventory.Activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -25,7 +22,6 @@ import com.lecomte.jessy.booksinventory.Fragments.AboutFragment;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
 import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
-import com.lecomte.jessy.booksinventory.Fragments.DeleteBookFragment;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
@@ -50,7 +46,6 @@ import com.lecomte.jessy.booksinventory.Services.BookService;
 public class BookListActivity extends AppCompatActivity
         implements BookListFragment.Callbacks,
         AddBookFragment.Callbacks,
-        DeleteBookFragment.Callbacks,
         BookDetailFragment.Callbacks {
 
     private static final String TAG = BookListActivity.class.getSimpleName();
@@ -149,7 +144,6 @@ public class BookListActivity extends AppCompatActivity
         loadBookDetailsView(isbn);
     }
 
-    @Override
     public void onDeleteBookRequest() {
         boolean bBookDeleted = false;
         BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()
@@ -315,7 +309,7 @@ public class BookListActivity extends AppCompatActivity
      */
     @Override
     public void onBookForcedSelection(String isbn) {
-        // 2-pane layout: load book detains into fragment; 1-pane: do nothing
+        // 2-pane layout: load book details into fragment; 1-pane: do nothing
         loadBookDetailsFragment(isbn);
     }
 
@@ -395,10 +389,16 @@ public class BookListActivity extends AppCompatActivity
             return true;
         }
 
+        // This menu option is only available in a 2-pane layout
         else if (id == R.id.menu_delete_book) {
-            Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
-            deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
-            startActivity(deleteBookIntent);
+
+            onDeleteBookRequest();
+
+            /*else {
+                Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
+                deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
+                startActivity(deleteBookIntent);
+            }*/
             return true;
         }
 
