@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 import com.lecomte.jessy.booksinventory.Fragments.BookDetailFragment;
-import com.lecomte.jessy.booksinventory.Fragments.BookListFragment;
 import com.lecomte.jessy.booksinventory.R;
 
 /**
@@ -34,7 +32,7 @@ public class BookDetailActivity extends AppCompatActivity implements BookDetailF
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
-        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.book_detail_Share_FAB);
         mShareFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

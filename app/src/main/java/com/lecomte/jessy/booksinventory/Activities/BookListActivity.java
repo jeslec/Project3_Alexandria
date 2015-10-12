@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -73,7 +74,7 @@ public class BookListActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mShareFloatingActionButton = (FloatingActionButton) findViewById(R.id.book_list_Share_FAB);
         mShareFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,7 +120,8 @@ public class BookListActivity extends AppCompatActivity
 
     private void notifyAddBookFragmentToLoadBookData() {
         FragmentManager fm = getSupportFragmentManager();
-        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentById(R.id.fragment_add_book);
+        // For some odd reason, trying to find fragment by Id does not work for this case?!?
+        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentByTag(AddBookFragment.TAG);
 
         if (addFragment != null) {
             addFragment.loadBookData();
@@ -257,7 +259,6 @@ public class BookListActivity extends AppCompatActivity
     }
 
     private void loadAddBookView() {
-        Toast.makeText(this, "Add Book", Toast.LENGTH_SHORT).show();
         if (mTwoPane) {
             AddBookFragment fragment = null;
             FragmentManager fragMgr = getSupportFragmentManager();

@@ -95,7 +95,10 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mSubTitleTextView.setText("");
         mDescriptionTextView.setText("");
         mImageView.setVisibility(View.INVISIBLE);
-        mDeleteButton.setVisibility(View.INVISIBLE);
+
+        if (mDeleteButton != null) {
+            mDeleteButton.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -111,39 +114,42 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mCategoryTextView = (TextView) rootView.findViewById(R.id.book_detail_Categories);
         mDeleteButton = (ImageButton) rootView.findViewById(R.id.book_detail_DeleteButton);
 
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        // This button is not present in a 2-pane layout so it will be null in that case
+        if (mDeleteButton != null) {
+            mDeleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                if (mTwoPaneLayout) {
-                    mCallbacks.loadDeleteBookConfirmationView();
-                    return;
-                }
+                    if (mTwoPaneLayout) {
+                        mCallbacks.loadDeleteBookConfirmationView();
+                        return;
+                    }
 
-                // Single-pane layout: ask user to confirm his book deletion request
-                else {
-                    // http://stackoverflow.com/questions/2115758/how-to-display-alert-dialog-in-android
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle("Delete Book")
-                            .setMessage("Are you sure you want to delete this book?")
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // continue with delete
-                                    Intent deleteBookIntent = new Intent(INTENT_ACTION_DELETE_BOOK);
-                                    deleteBookIntent.setClass(getActivity(), BookListActivity.class);
-                                    startActivity(deleteBookIntent);
-                                }
-                            })
+                    // Single-pane layout: ask user to confirm his book deletion request
+                    else {
+                        // http://stackoverflow.com/questions/2115758/how-to-display-alert-dialog-in-android
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle("Delete Book")
+                                .setMessage("Are you sure you want to delete this book?")
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // continue with delete
+                                        Intent deleteBookIntent = new Intent(INTENT_ACTION_DELETE_BOOK);
+                                        deleteBookIntent.setClass(getActivity(), BookListActivity.class);
+                                        startActivity(deleteBookIntent);
+                                    }
+                                })
                             /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // do nothing
                                 }
                             })*/
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         clearWidgets();
 
@@ -200,7 +206,9 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
             mImageView.setVisibility(View.VISIBLE);
         }
 
-        mDeleteButton.setVisibility(View.VISIBLE);
+        if (mDeleteButton != null) {
+            mDeleteButton.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

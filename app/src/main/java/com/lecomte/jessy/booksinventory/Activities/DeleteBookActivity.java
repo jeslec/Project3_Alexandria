@@ -22,7 +22,7 @@ public class DeleteBookActivity extends AppCompatActivity implements DeleteBookF
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.delete_book_Share_FAB);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

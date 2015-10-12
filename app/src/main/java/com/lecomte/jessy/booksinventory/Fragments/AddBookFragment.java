@@ -2,10 +2,7 @@ package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,7 +11,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -71,6 +67,7 @@ public class AddBookFragment extends DialogFragment
     private BookData mBookData = null;
     private boolean mConfigurationChanged = false;
     private Bundle mSavedInstanceState = null;
+    private TextView mDialogTitle;
 
     public AddBookFragment() {
     }
@@ -297,6 +294,8 @@ public class AddBookFragment extends DialogFragment
         });
 
         //clearWidgets();
+
+        //mDialogTitle.setEnabled(false);
 
         return rootView;
     }

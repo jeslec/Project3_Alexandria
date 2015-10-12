@@ -2,21 +2,32 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              android:background="#ffffff">
 
-        <!-- Container for search box, clear search button and scan button -->
-        <LinearLayout
-            android:orientation="horizontal"
+    <!-- Title bar with search box, clear search button and scan button -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:padding="@dimen/dialog_horizontal_margin"
+        android:background="@color/colorPrimary">
+
+        <!-- Dialog title -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical|left"
-            android:layout_marginLeft="@dimen/dialog_horizontal_margin"
-            android:layout_marginRight="@dimen/dialog_horizontal_margin"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
-            android:background="@color/colorPrimary"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp">
+            android:id="@+id/add_book_DialogTitle"
+            android:text="@string/add_book_title"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|right"
+            android:layout_marginLeft="@dimen/dialog_horizontal_margin">
 
             <!-- Book search box -->
             <EditText
@@ -46,6 +57,8 @@
 
         </LinearLayout>
 
+    </LinearLayout>
+
     <!-- Book data section -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -60,13 +73,15 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginTop="@dimen/book_detail_title_marginTop"/>
+            android:layout_marginTop="@dimen/book_detail_title_marginTop"
+            android:textColor="#000000"/>
 
         <!-- Book SubTitle -->
         <TextView
             android:id="@+id/book_subtitle_textView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
 
         <!-- 2-parts section -->
         <LinearLayout

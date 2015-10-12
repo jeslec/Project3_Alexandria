@@ -2,31 +2,26 @@ package com.lecomte.jessy.booksinventory.Activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
-import com.journeyapps.barcodescanner.Util;
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
-import com.lecomte.jessy.booksinventory.Fragments.DeleteBookFragment;
-import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 
 public class AddBookActivity extends AppCompatActivity implements AddBookFragment.Callbacks {
 
     private static final String TAG = AddBookActivity.class.getSimpleName();
+
+    private FloatingActionButton mShareButton;
 
     private MessageReceiver mMessageReceiver;
 
@@ -37,8 +32,8 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mShareButton = (FloatingActionButton) findViewById(R.id.add_book_Share_FAB);
+        mShareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (getHostedFragment() != null) {
@@ -48,6 +43,9 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
                         .setAction("Action", null).show();*/
             }
         });
+
+        // Hide share button until user has selected a book and it is displayed
+        hideShareButton();
     }
 
     @Override
@@ -72,18 +70,17 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 
-    private void loadBookData() {
-        FragmentManager fm = getSupportFragmentManager();
-        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentById(R.id.fragment_add_book);
-
-        if (addFragment != null) {
-            addFragment.loadBookData();
-        }
-    }
-
     private AddBookFragment getHostedFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         return (AddBookFragment)fragmentManager.findFragmentById(R.id.fragment_add_book);
+    }
+
+    private void showSharebutton() {
+        mShareButton.setVisibility(View.VISIBLE);
+    }
+
+    private void hideShareButton() {
+        mShareButton.setVisibility(View.INVISIBLE);
     }
 
     // Good tutorial on broadcast receivers:
@@ -109,10 +106,16 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
-                    loadBookData();
+                    if (getHostedFragment() != null) {
+                        getHostedFragment().loadBookData();
+                        showSharebutton();
+                    }
                 } else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
-                    loadBookData();
+                    if (getHostedFragment() != null) {
+                        getHostedFragment().loadBookData();
+                        showSharebutton();
+                    }
                 }
 
                 else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
