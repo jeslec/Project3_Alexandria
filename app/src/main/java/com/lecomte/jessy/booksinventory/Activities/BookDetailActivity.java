@@ -92,9 +92,4 @@ public class BookDetailActivity extends AppCompatActivity implements BookDetailF
         }
         return super.onOptionsItemSelected(item);
     }
-
-    @Override
-    public void loadDeleteBookConfirmationView() {
-
-    }
 }

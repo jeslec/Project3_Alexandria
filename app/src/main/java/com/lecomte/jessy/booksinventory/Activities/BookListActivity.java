@@ -284,30 +284,6 @@ public class BookListActivity extends AppCompatActivity
         }
     }
 
-    public void loadDeleteBookConfirmationView() {
-        if (mTwoPane) {
-            DeleteBookFragment fragment = null;
-            FragmentManager fragMgr = getSupportFragmentManager();
-            fragment = (DeleteBookFragment) fragMgr.findFragmentById(R.id.fragment_add_book);
-
-            FragmentTransaction fragmentTransaction = fragMgr.beginTransaction();
-
-            if (fragment == null) {
-                Log.d(TAG, "DeleteBookFragment not found, creating a new one and putting it in layout");
-                fragment = DeleteBookFragment.newInstance();
-                fragmentTransaction.add(fragment, DeleteBookFragment.TAG);
-            } else {
-                Log.d(TAG, "DeleteBookFragment found, putting it in layout...");
-                fragmentTransaction.remove(fragment)
-                        .add(fragment, DeleteBookFragment.TAG);
-            }
-            fragmentTransaction.commit();
-        } else {
-            Intent intent = new Intent(this, DeleteBookActivity.class);
-            startActivity(intent);
-        }
-    }
-
     private void loadAboutView() {
         if (mTwoPane) {
             AboutFragment fragment = null;
@@ -420,19 +396,9 @@ public class BookListActivity extends AppCompatActivity
         }
 
         else if (id == R.id.menu_delete_book) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Book")
-                    .setMessage("Are you sure you want to delete this book?")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // continue with delete
-                            Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
-                            deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
-                            startActivity(deleteBookIntent);
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+            Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
+            deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
+            startActivity(deleteBookIntent);
             return true;
         }
 

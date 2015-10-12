@@ -226,7 +226,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
 
     // Container Activity must implement this interface
     public interface Callbacks {
-        public void loadDeleteBookConfirmationView();
+
     }
 
     @Override
