@@ -120,13 +120,9 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                 @Override
                 public void onClick(View v) {
 
-                    if (mTwoPaneLayout) {
-                        mCallbacks.loadDeleteBookConfirmationView();
-                        return;
-                    }
-
-                    // Single-pane layout: ask user to confirm his book deletion request
-                    else {
+                    // There's a delete button in the details view only and for single-pane layout
+                    if (!mTwoPaneLayout) {
+                        // Ask for user confirmation before deleting the book
                         // http://stackoverflow.com/questions/2115758/how-to-display-alert-dialog-in-android
                         new AlertDialog.Builder(getActivity())
                                 .setTitle("Delete Book")

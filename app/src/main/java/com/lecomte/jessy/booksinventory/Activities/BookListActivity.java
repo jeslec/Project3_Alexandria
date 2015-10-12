@@ -2,6 +2,7 @@ package com.lecomte.jessy.booksinventory.Activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -418,7 +420,19 @@ public class BookListActivity extends AppCompatActivity
         }
 
         else if (id == R.id.menu_delete_book) {
-            loadDeleteBookConfirmationView();
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Book")
+                    .setMessage("Are you sure you want to delete this book?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
+                            deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
+                            startActivity(deleteBookIntent);
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
             return true;
         }
 
