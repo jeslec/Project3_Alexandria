@@ -93,6 +93,11 @@ public class BookListFragment extends ListFragment
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
+
+            // TEST: added here instead of onStart()
+            getListView().setEmptyView(createEmptyListTextView("No books!"));
+            //----
+
             // Only call this if we are in a 2-pane layout
             setSelectedBookRunnable();
         }
