@@ -85,31 +85,31 @@ public class BookService extends IntentService {
      */
     private void deleteBook(String isbn) {
         Log.d(TAG, "deleteSelectedBook() - ISBN: " + isbn);
-        int rowsDeleted = 0;
+        int bookRowsDeleted = 0;
+        int categoryRowsDeleted = 0;
+        int authorRowsDeleted = 0;
         if (isbn != null) {
-            rowsDeleted = getContentResolver().delete(
+            // Delete from "categories" table
+            categoryRowsDeleted = getContentResolver().delete(
+                    AlexandriaContract.CategoryEntry.buildCategoryUri(Long.parseLong(isbn)), null, null);
+
+            // Delete from "authors" table
+            authorRowsDeleted = getContentResolver().delete(
+                    AlexandriaContract.AuthorEntry.buildAuthorUri(Long.parseLong(isbn)), null, null);
+
+            // Delete from "books" table
+            bookRowsDeleted = getContentResolver().delete(
                     AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(isbn)), null, null);
-            Log.d(TAG, "deleteSelectedBook() - Number of books deleted: " + rowsDeleted);
+
+            //Log.d(TAG, "deleteSelectedBook() - Number of books deleted: " + rowsDeleted);
         }
 
         // Send status to client about the delete command
-        if (rowsDeleted > 0) {
+        if (authorRowsDeleted > 0 && categoryRowsDeleted > 0 && bookRowsDeleted > 0) {
             sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_DELETED, isbn);
         } else {
             sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_NOT_DELETED, isbn);
         }
-    }
-    
-    private BookData cursorToBookData(Cursor cursor) {
-        BookData bookInfo = new BookData();
-        bookInfo.setDescription(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.DESC)));
-        bookInfo.setTitle(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE)));
-        bookInfo.setSubTitle(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE)));
-
-        bookInfo.setImageUrl(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL)));
-        bookInfo.setAuthors(cursor.getString(cursor.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR)));
-        bookInfo.setCategories(cursor.getString(cursor.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY)));
-        return bookInfo;
     }
 
     private void sendCommandResultToClient(String command, int result, String isbn) {

@@ -11,13 +11,17 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
-import com.lecomte.jessy.booksinventory.Other.Utility;
+import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
 
 /**
@@ -43,6 +47,7 @@ public class BookListFragment extends ListFragment
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
 
     private boolean mDeleteBookInProgress = false;
+    private View mViewForEmptyList;
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -277,5 +282,56 @@ public class BookListFragment extends ListFragment
         shareUrlIntent.putExtra(Intent.EXTRA_TEXT, bookTitle);
         shareUrlIntent.setType("text/plain");
         startActivity(shareUrlIntent);
+    }
+
+    /*@Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = super.onCreateView(inflater, container, savedInstanceState);
+
+        // TEST
+        mViewForEmptyList = inflater.inflate(R.layout.empty_book_list, container, false);
+
+        return v;
+    }*/
+
+    // http://stackoverflow.com/questions/14082303/setemptyview-with-custom-listlayout-in-listfragment#15990955
+    private TextView createEmptyListTextView(String text) {
+        TextView emptyView = new TextView(getActivity());
+
+        // TEST
+        //emptyView.setId)
+
+        // Make sure you import android.widget.LinearLayout.LayoutParams;
+        emptyView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        // Instead of passing resource id here I passed resolved color
+        // That is, getResources().getColor((R.color.gray_dark))
+        //emptyView.setTextColor(getResources().getColor(R.color.gray_dark));
+        emptyView.setText(text);
+        emptyView.setTextSize(12);
+        emptyView.setVisibility(View.GONE);
+        emptyView.setGravity(Gravity.CENTER_VERTICAL
+                | Gravity.CENTER_HORIZONTAL);
+
+        // Add the view to the list view. This might be what you are missing
+        ((ViewGroup) getListView().getParent()).addView(emptyView);
+
+        return emptyView;
+    }
+
+    /*private View createViewForEmptyList() {
+
+    }*/
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        //getListView().setEmptyView(mViewForEmptyList);
+        //if (mBookListAdapter == null || mBookListAdapter.getCount() == 0) {
+        //getListView().setEmptyView(createEmptyListTextView("No books!"));
+        /*} else {
+            getListView().setEmptyView(null);
+        }*/
     }
 }

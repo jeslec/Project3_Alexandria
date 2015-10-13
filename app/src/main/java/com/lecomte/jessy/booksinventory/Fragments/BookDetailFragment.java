@@ -172,30 +172,42 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
 
         // Title
         String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        mTitleTextView.setText(bookTitle);
+        if (bookTitle != null) {
+            mTitleTextView.setText(bookTitle);
+        }
 
         // SubTitle
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        mSubTitleTextView.setText(bookSubTitle);
+        if (bookSubTitle != null) {
+            mSubTitleTextView.setText(bookSubTitle);
+        }
 
         // Description
         String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
-        mDescriptionTextView.setText(desc);
+        if (desc != null) {
+            mDescriptionTextView.setText(desc);
+        }
 
         // Authors
         String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = authors.split(",");
-        mAuthorTextView.setLines(authorsArr.length);
-        mAuthorTextView.setText(authors.replace(",","\n"));
+        if (authors != null) {
+            String[] authorsArr = authors.split(",");
+            mAuthorTextView.setLines(authorsArr.length);
+            mAuthorTextView.setText(authors.replace(",","\n"));
+        }
 
         // Categories
         String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
-        mCategoryTextView.setText(categories);
+        if (categories != null) {
+            mCategoryTextView.setText(categories);
+        }
 
         // Image
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        Glide.with(this).load(imgUrl).into(mImageView);
-        mImageView.setVisibility(View.VISIBLE);
+        if (imgUrl != null) {
+            Glide.with(this).load(imgUrl).into(mImageView);
+            mImageView.setVisibility(View.VISIBLE);
+        }
 
         if (mDeleteButton != null) {
             mDeleteButton.setVisibility(View.VISIBLE);

@@ -41,14 +41,22 @@ public class BookListAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        String imgUrl = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        Glide.with(context).load(imgUrl).into(viewHolder.bookCover);
+        if (viewHolder != null) {
+            String imgUrl = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+            if (imgUrl != null) {
+                Glide.with(context).load(imgUrl).into(viewHolder.bookCover);
+            }
 
-        String bookTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        viewHolder.bookTitle.setText(bookTitle);
+            String bookTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+            if (bookTitle != null) {
+                viewHolder.bookTitle.setText(bookTitle);
+            }
 
-        String bookSubTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        viewHolder.bookSubTitle.setText(bookSubTitle);
+            String bookSubTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+            if (bookSubTitle != null) {
+                viewHolder.bookSubTitle.setText(bookSubTitle);
+            }
+        }
     }
 
     @Override

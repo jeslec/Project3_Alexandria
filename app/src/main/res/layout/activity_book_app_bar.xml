@@ -29,6 +29,13 @@
         android:id="@+id/frameLayout">
 
         <include layout="@layout/activity_book_list"/>
+
+        <!-- TEST: jessy (added TextView - Empty list test) -->
+        <!--<TextView
+            android:id="@android:id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="List is empty!"/>-->
     </FrameLayout>
 
     <android.support.design.widget.FloatingActionButton

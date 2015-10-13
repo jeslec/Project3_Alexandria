@@ -2,6 +2,9 @@
     <string name="app_name">Alexandria</string>
     <string name="title_book_detail">Book Detail</string>
 
+    <!-- Book list view -->
+    <string name="book_list_empty">No books to display</string>
+
     <!-- Action menu options -->
     <string name="action_settings">Settings</string>
     <string name="action_add_book">Add Book</string>

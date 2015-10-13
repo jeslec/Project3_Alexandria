@@ -292,11 +292,13 @@ public class BookProvider extends ContentProvider {
                 rowsDeleted = db.delete(
                         AlexandriaContract.BookEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-            case AUTHOR:
+            case AUTHOR_ID:
                 rowsDeleted = db.delete(
                         AlexandriaContract.AuthorEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-            case CATEGORY:
+            // TEST
+            //case CATEGORY:
+            case CATEGORY_ID:
                 rowsDeleted = db.delete(
                         AlexandriaContract.CategoryEntry.TABLE_NAME, selection, selectionArgs);
                 break;

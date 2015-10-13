@@ -102,26 +102,36 @@ public class AddBookFragment extends DialogFragment
 
         // Title
         String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        mTitleTextView.setText(bookTitle);
+        if (bookTitle != null) {
+            mTitleTextView.setText(bookTitle);
+        }
 
         // SubTitle
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        mSubTitleTextView.setText(bookSubTitle);
+        if (bookSubTitle != null) {
+            mSubTitleTextView.setText(bookSubTitle);
+        }
 
         // Author
         String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = authors.split(",");
-        mAuthorTextView.setLines(authorsArr.length);
-        mAuthorTextView.setText(authors.replace(",","\n"));
+        if (authors != null) {
+            String[] authorsArr = authors.split(",");
+            mAuthorTextView.setLines(authorsArr.length);
+            mAuthorTextView.setText(authors.replace(",","\n"));
+        }
 
         // Category
         String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
-        mCategoryTextView.setText(categories);
+        if (categories != null) {
+            mCategoryTextView.setText(categories);
+        }
 
         // Image URL
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        Glide.with(this).load(imgUrl).into(mBookImage);
-        mBookImage.setVisibility(View.VISIBLE);
+        if (imgUrl != null) {
+            Glide.with(this).load(imgUrl).into(mBookImage);
+            mBookImage.setVisibility(View.VISIBLE);
+        }
 
         // Save book info so we can reuse it when there's a configuration change
         mBookData = new BookData(bookTitle, bookSubTitle, mAuthorTextView.getText().toString(),
@@ -269,14 +279,29 @@ public class AddBookFragment extends DialogFragment
                     mBookData = new BookData();
                     mBookData = mSavedInstanceState.getParcelable(STATE_BOOK_DATA);
 
-                    mTitleTextView.setText(mBookData.getTitle());
-                    mSubTitleTextView.setText(mBookData.getSubTitle());
-                    mAuthorTextView.setText(mBookData.getAuthors());
-                    mCategoryTextView.setText(mBookData.getCategories());
+                    if (mBookData != null) {
+                        if (mBookData.getImageUrl() != null) {
+                            mTitleTextView.setText(mBookData.getTitle());
+                        }
 
-                    String imageUrl = mBookData.getImageUrl();
-                    Glide.with(AddBookFragment.this).load(imageUrl).into(mBookImage);
-                    mBookImage.setVisibility(View.VISIBLE);
+                        if (mBookData.getSubTitle() != null) {
+                            mSubTitleTextView.setText(mBookData.getSubTitle());
+                        }
+
+                        if (mBookData.getAuthors() != null) {
+                            mAuthorTextView.setText(mBookData.getAuthors());
+                        }
+
+                        if (mBookData.getCategories() != null) {
+                            mCategoryTextView.setText(mBookData.getCategories());
+                        }
+
+                        if (mBookData.getImageUrl() != null) {
+                            String imageUrl = mBookData.getImageUrl();
+                            Glide.with(AddBookFragment.this).load(imageUrl).into(mBookImage);
+                            mBookImage.setVisibility(View.VISIBLE);
+                        }
+                    }
 
                     mConfigurationChanged = false;
                     return;
