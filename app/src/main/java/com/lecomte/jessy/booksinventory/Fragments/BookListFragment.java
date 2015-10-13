@@ -1,6 +1,7 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -14,13 +15,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
 import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
+
+import org.w3c.dom.Text;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -40,6 +47,7 @@ public class BookListFragment extends ListFragment
 
     private Callbacks mCallbacks = null;
     private BookListAdapter mBookListAdapter;
+    private View mEmptyView;
 
     // Initially, the list is empty so there is no item selected
     private int mSelectedItemIndex = ListView.INVALID_POSITION;
@@ -87,11 +95,38 @@ public class BookListFragment extends ListFragment
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished()");
 
+        // No data
+        if (!data.moveToFirst()) {
+            // Internet not available
+            if (!Utility.isInternetAvailable(getActivity())) {
+                Toast.makeText(getActivity(), R.string.internet_not_available,
+                        Toast.LENGTH_LONG).show();
+                mEmptyView = createViewForEmptyList(true, false);
+
+                if (mEmptyView != null) {
+                    getListView().setEmptyView(mEmptyView);
+                }
+            }
+            // No books records in database
+            else {
+                Toast.makeText(getActivity(), R.string.book_list_empty,
+                        Toast.LENGTH_LONG).show();
+                mEmptyView = createViewForEmptyList(false, true);
+
+                if (mEmptyView != null) {
+                    getListView().setEmptyView(mEmptyView);
+                }
+            }
+        }
+
         // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
-            getListView().setEmptyView(createViewForEmptyList());
+
+            if (mEmptyView != null) {
+                getListView().setEmptyView(mEmptyView);
+            }
             // Only call this if we are in a 2-pane layout
             setSelectedBookRunnable();
         }
@@ -286,7 +321,7 @@ public class BookListFragment extends ListFragment
     // View displayed when the list view is empty
     // http://stackoverflow.com/questions/14082303/setemptyview-with-custom-listlayout-in-listfragment#15990955
     // http://cyrilmottier.com/2011/06/20/listview-tips-tricks-1-handle-emptiness/
-    private ViewStub createViewForEmptyList() {
+    private ViewStub createViewForEmptyList(boolean bNetworkOff, boolean bNoBooksInDb) {
         ViewStub viewStub = new ViewStub(getActivity());
 
         // Make sure you import android.widget.LinearLayout.LayoutParams;
@@ -297,12 +332,21 @@ public class BookListFragment extends ListFragment
         //emptyView.setTextColor(getResources().getColor(R.color.gray_dark));
         //viewStub.setText(text);
         //viewStub.setTextSize(12);
-        viewStub.setLayoutResource(R.layout.empty_book_list);
         viewStub.setVisibility(View.GONE);
+
+        if (bNetworkOff) {
+            viewStub.setLayoutResource(R.layout.empty_book_list_no_network);
+        }
+
+        else {
+            viewStub.setLayoutResource(R.layout.empty_book_list_db_empty);
+        }
+
+
         /*viewStub.setGravity(Gravity.CENTER_VERTICAL
                 | Gravity.CENTER_HORIZONTAL);*/
 
-        // Add the view to the list view. This might be what you are missing
+        // Add empty view to the list view
         ((ViewGroup) getListView().getParent()).addView(viewStub);
 
         return viewStub;

@@ -4,23 +4,24 @@
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
 	android:layout_gravity="center"
-	android:orientation="horizontal"
+	android:orientation="vertical"
 	android:padding="20dp">
 
 	<ImageView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:scaleType="centerInside"
-		android:src="@drawable/empty_book_list" />
+		android:src="@drawable/no_books" />
 
 	<TextView
+		android:id="@+id/empty_book_list_TextView"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="8dp"
-		android:layout_gravity="center_vertical"
+		android:layout_marginTop="8dp"
+		android:layout_gravity="center_horizontal"
 		android:gravity="center"
 		android:textStyle="bold"
 		android:textSize="16sp"
-		android:text="@string/book_list_empty" />
+		android:text="@string/empty_book_list_db_empty" />
 
 </LinearLayout>
