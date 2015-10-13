@@ -294,13 +294,15 @@ public class BookProvider extends ContentProvider {
                 break;
             case AUTHOR_ID:
                 rowsDeleted = db.delete(
-                        AlexandriaContract.AuthorEntry.TABLE_NAME, selection, selectionArgs);
+                        AlexandriaContract.AuthorEntry.TABLE_NAME,
+                        AlexandriaContract.AuthorEntry._ID + " = '" + ContentUris.parseId(uri) + "'",
+                        selectionArgs);
                 break;
-            // TEST
-            //case CATEGORY:
             case CATEGORY_ID:
                 rowsDeleted = db.delete(
-                        AlexandriaContract.CategoryEntry.TABLE_NAME, selection, selectionArgs);
+                        AlexandriaContract.CategoryEntry.TABLE_NAME,
+                        AlexandriaContract.CategoryEntry._ID + " = '" + ContentUris.parseId(uri) + "'",
+                        selectionArgs);
                 break;
             case BOOK_ID:
                 rowsDeleted = db.delete(

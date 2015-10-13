@@ -100,8 +100,6 @@ public class BookService extends IntentService {
             // Delete from "books" table
             bookRowsDeleted = getContentResolver().delete(
                     AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(isbn)), null, null);
-
-            //Log.d(TAG, "deleteSelectedBook() - Number of books deleted: " + rowsDeleted);
         }
 
         // Send status to client about the delete command
