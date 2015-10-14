@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.Fragments.AddBookFragment;
 import com.lecomte.jessy.booksinventory.R;
@@ -101,16 +102,18 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
             int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
 
             if (command.equals(BookService.FETCH_BOOK)) {
-                Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
+                //Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
+                    //Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                     if (getHostedFragment() != null) {
                         getHostedFragment().loadBookData();
                         showSharebutton();
                     }
-                } else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
+                }
+
+                else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
+                    //Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
                     if (getHostedFragment() != null) {
                         getHostedFragment().loadBookData();
                         showSharebutton();
@@ -118,9 +121,18 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
                 }
 
                 else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
+                    //Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
+                    Toast.makeText(AddBookActivity.this, "Book not found on server", Toast.LENGTH_SHORT).show();
                     /*Toast.makeText(BookListActivity.this, getResources()
                             .getString(R.string.book_not_found), Toast.LENGTH_SHORT).show();*/
+                }
+
+                else if (result == BookService.FETCH_RESULT_SERVER_ERROR) {
+                    Toast.makeText(AddBookActivity.this, "Server error", Toast.LENGTH_SHORT).show();
+                }
+
+                else if (result == BookService.FETCH_RESULT_SERVER_DOWN) {
+                    Toast.makeText(AddBookActivity.this, "Server down", Toast.LENGTH_SHORT).show();
                 }
             }
 

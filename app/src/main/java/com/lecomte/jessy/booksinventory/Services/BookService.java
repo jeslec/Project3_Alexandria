@@ -2,9 +2,12 @@ package com.lecomte.jessy.booksinventory.Services;
 
 import android.app.IntentService;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringDef;
 import android.support.v4.content.LocalBroadcastManager;
@@ -12,6 +15,7 @@ import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
+import com.lecomte.jessy.booksinventory.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,8 +59,11 @@ public class BookService extends IntentService {
     public static final int FETCH_RESULT_ADDED_TO_DB    = 1;
     public static final int FETCH_RESULT_ALREADY_IN_DB  = 2;
     public static final int FETCH_RESULT_NOT_FOUND      = 3;
+    public static final int FETCH_RESULT_SERVER_ERROR   = 4;
+    public static final int FETCH_RESULT_SERVER_DOWN    = 5;
 
-    @IntDef( {FETCH_RESULT_ADDED_TO_DB, FETCH_RESULT_ALREADY_IN_DB, FETCH_RESULT_NOT_FOUND} )
+    @IntDef( {FETCH_RESULT_ADDED_TO_DB, FETCH_RESULT_ALREADY_IN_DB, FETCH_RESULT_NOT_FOUND,
+            FETCH_RESULT_SERVER_ERROR, FETCH_RESULT_SERVER_DOWN} )
     @Retention(RetentionPolicy.SOURCE)
     public @interface FetchResult {}
 
@@ -126,6 +133,7 @@ public class BookService extends IntentService {
 
     private void sendFetchResultToClient(@FetchResult int result, String isbn) {
         sendCommandResultToClient(FETCH_BOOK, result, isbn);
+        saveFetchStatus(result);
     }
 
     private void sendDeleteResultToClient(@DeleteResult int result, String isbn) {
@@ -184,6 +192,7 @@ public class BookService extends IntentService {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String bookJsonString = null;
+        boolean bServerDown = false;
 
         try {
             final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
@@ -219,6 +228,7 @@ public class BookService extends IntentService {
             bookJsonString = buffer.toString();
         } catch (Exception e) {
             Log.e(TAG, "Error ", e);
+            bServerDown = true;
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -230,6 +240,11 @@ public class BookService extends IntentService {
                     Log.e(TAG, "Error closing stream", e);
                 }
             }
+        }
+
+        if (bServerDown) {
+            sendFetchResultToClient(FETCH_RESULT_SERVER_DOWN, isbn);
+            return;
         }
 
         final String ITEMS = "items";
@@ -269,21 +284,23 @@ public class BookService extends IntentService {
             }
 
             String imgUrl = "";
-            if(bookInfo.has(IMG_URL_PATH) && bookInfo.getJSONObject(IMG_URL_PATH).has(IMG_URL)) {
+            if (bookInfo.has(IMG_URL_PATH) && bookInfo.getJSONObject(IMG_URL_PATH).has(IMG_URL)) {
                 imgUrl = bookInfo.getJSONObject(IMG_URL_PATH).getString(IMG_URL);
             }
 
             writeBackBook(isbn, title, subtitle, desc, imgUrl);
 
-            if(bookInfo.has(AUTHORS)) {
+            if (bookInfo.has(AUTHORS)) {
                 writeBackAuthors(isbn, bookInfo.getJSONArray(AUTHORS));
             }
-            if(bookInfo.has(CATEGORIES)){
-                writeBackCategories(isbn,bookInfo.getJSONArray(CATEGORIES) );
+            if (bookInfo.has(CATEGORIES)){
+                writeBackCategories(isbn,bookInfo.getJSONArray(CATEGORIES));
             }
 
         } catch (JSONException e) {
             Log.e(TAG, "Error ", e);
+            sendFetchResultToClient(FETCH_RESULT_SERVER_ERROR, isbn);
+            return;
         }
 
         // Book downloaded and saved to DB
@@ -318,5 +335,13 @@ public class BookService extends IntentService {
             getContentResolver().insert(AlexandriaContract.CategoryEntry.CONTENT_URI, values);
             values= new ContentValues();
         }
+    }
+
+    private void saveFetchStatus(@FetchResult int result) {
+        Context context = getApplicationContext();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(getString(R.string.pref_book_service_command_status), result);
+        spe.commit();
     }
 }

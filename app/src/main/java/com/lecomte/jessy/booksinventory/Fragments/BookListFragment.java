@@ -122,29 +122,6 @@ public class BookListFragment extends ListFragment
         Log.d(TAG, "onLoadFinished()");
 
         updateEmptyView(data);
-        // No data
-        /*if (!data.moveToFirst()) {
-            // Internet not available
-            if (!Utility.isInternetAvailable(getActivity())) {
-                Toast.makeText(getActivity(), R.string.internet_not_available,
-                        Toast.LENGTH_LONG).show();
-                mEmptyView = createViewForEmptyList(true, false);
-
-                if (mEmptyView != null) {
-                    getListView().setEmptyView(mEmptyView);
-                }
-            }
-            // No books records in database
-            else {
-                Toast.makeText(getActivity(), R.string.book_list_empty,
-                        Toast.LENGTH_LONG).show();
-                mEmptyView = createViewForEmptyList(false, true);
-
-                if (mEmptyView != null) {
-                    getListView().setEmptyView(mEmptyView);
-                }
-            }
-        }*/
 
         // If the app was just started, the adapter is not set
         if (mBookListAdapter == null) {
