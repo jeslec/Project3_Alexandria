@@ -5,13 +5,13 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.ResultReceiver;
+import android.support.annotation.IntDef;
+import android.support.annotation.StringDef;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
-import com.lecomte.jessy.booksinventory.Data.BookData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -35,6 +37,10 @@ public class BookService extends IntentService {
     public static final String FETCH_BOOK = "it.jaschke.alexandria.services.action.FETCH_BOOK";
     public static final String DELETE_BOOK = "it.jaschke.alexandria.services.action.DELETE_BOOK";
 
+    @StringDef({FETCH_BOOK, DELETE_BOOK})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface BookServiceCommand {}
+
     // Service to client communication
 
     // Intent action when this service sends data to the client
@@ -46,13 +52,21 @@ public class BookService extends IntentService {
     public static final String EXTRA_ISBN    = BuildConfig.APPLICATION_ID + ".EXTRA_ISBN";
 
     // Fetch book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is FETCH_BOOK)
-    public static final int FETCH_RESULT_ADDED_TO_DB   = 1;
-    public static final int FETCH_RESULT_ALREADY_IN_DB = 2;
-    public static final int FETCH_RESULT_NOT_FOUND     = 3;
+    public static final int FETCH_RESULT_ADDED_TO_DB    = 1;
+    public static final int FETCH_RESULT_ALREADY_IN_DB  = 2;
+    public static final int FETCH_RESULT_NOT_FOUND      = 3;
+
+    @IntDef( {FETCH_RESULT_ADDED_TO_DB, FETCH_RESULT_ALREADY_IN_DB, FETCH_RESULT_NOT_FOUND} )
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FetchResult {}
 
     // Delete book command results (possible values for EXTRA_RESULT key when EXTRA_COMMAND is DELETE_BOOK)
     public static final int DELETE_RESULT_DELETED      = 10;
     public static final int DELETE_RESULT_NOT_DELETED  = 11;
+
+    @IntDef( {DELETE_RESULT_DELETED, DELETE_RESULT_NOT_DELETED} )
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DeleteResult {}
 
     public BookService() {
         super("Alexandria");
@@ -104,13 +118,24 @@ public class BookService extends IntentService {
 
         // Send status to client about the delete command
         if (authorRowsDeleted > 0 && categoryRowsDeleted > 0 && bookRowsDeleted > 0) {
-            sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_DELETED, isbn);
+            sendDeleteResultToClient(DELETE_RESULT_DELETED, isbn);
         } else {
-            sendCommandResultToClient(DELETE_BOOK, DELETE_RESULT_NOT_DELETED, isbn);
+            sendDeleteResultToClient(DELETE_RESULT_NOT_DELETED, isbn);
         }
     }
 
-    private void sendCommandResultToClient(String command, int result, String isbn) {
+    private void sendFetchResultToClient(@FetchResult int result, String isbn) {
+        sendCommandResultToClient(FETCH_BOOK, result, isbn);
+    }
+
+    private void sendDeleteResultToClient(@DeleteResult int result, String isbn) {
+        sendCommandResultToClient(DELETE_BOOK, result, isbn);
+    }
+
+    // Don't call this method directly
+    // Should only be called by: sendFetchResultToClient() and sendDeleteResultToClient()
+    private void sendCommandResultToClient(@BookServiceCommand String command,
+                                           int result, String isbn) {
         Log.d(TAG, "sendCommandResultToClient() - ISBN: " + isbn);
         Intent intent = new Intent(MESSAGE);
         intent.putExtra(EXTRA_COMMAND, command);
@@ -147,7 +172,7 @@ public class BookService extends IntentService {
             Log.d(TAG, "fetchBook() - No need to download, this book is already in the database");
 
             if (bookCursor.moveToFirst()) {
-                sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_ALREADY_IN_DB, isbn);
+                sendFetchResultToClient(FETCH_RESULT_ALREADY_IN_DB, isbn);
             }
             
             bookCursor.close();
@@ -163,7 +188,6 @@ public class BookService extends IntentService {
         try {
             final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
             final String QUERY_PARAM = "q";
-
             final String ISBN_PARAM = "isbn:" + isbn;
 
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -226,12 +250,7 @@ public class BookService extends IntentService {
             if (bookJson.has(ITEMS)) {
                 bookArray = bookJson.getJSONArray(ITEMS);
             } else {
-                // TODO: Jessy - Fix this
-                //EXTRA_RESULT_BOOK_NOT_FOUND
-                /*Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
-                messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.not_found));
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);*/
-                sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_NOT_FOUND, isbn);
+                sendFetchResultToClient(FETCH_RESULT_NOT_FOUND, isbn);
                 return;
             }
 
@@ -268,7 +287,7 @@ public class BookService extends IntentService {
         }
 
         // Book downloaded and saved to DB
-        sendCommandResultToClient(FETCH_BOOK, FETCH_RESULT_ADDED_TO_DB, isbn);
+        sendFetchResultToClient(FETCH_RESULT_ADDED_TO_DB, isbn);
     }
 
     private void writeBackBook(String ean, String title, String subtitle, String desc, String imgUrl) {

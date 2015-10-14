@@ -32,7 +32,7 @@
     <string name="deletion_message">Are you sure?</string>
     <string name="delete_book_dialog_title">Delete Book</string>
     <string name="delete_confirmation_button_text">Yes, delete it!</string>
-    <string name="empty_book_list_db_empty">Empty database: no books to display</string>
-    <string name="empty_book_list_no_network">Network disabled: can\'t display books</string>
+    <string name="empty_book_list_db_empty">No book information available. You have not entered any books in your library.</string>
+    <string name="empty_book_list_no_network">No book information available. The network is not available to fetch book data.</string>
 
 </resources>

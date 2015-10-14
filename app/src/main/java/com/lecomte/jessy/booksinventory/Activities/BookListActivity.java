@@ -175,9 +175,8 @@ public class BookListActivity extends AppCompatActivity
 
             String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
             int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
-            String isbn = intent.getStringExtra(BookService.EXTRA_ISBN);
 
-            if (command == BookService.FETCH_BOOK) {
+            if (command.equals(BookService.FETCH_BOOK)) {
                 Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
@@ -205,7 +204,7 @@ public class BookListActivity extends AppCompatActivity
                 }
             }
 
-            else if (command == BookService.DELETE_BOOK) {
+            else if (command.equals(BookService.DELETE_BOOK)) {
                 Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
 
                 if (result == BookService.DELETE_RESULT_DELETED) {
@@ -256,7 +255,7 @@ public class BookListActivity extends AppCompatActivity
 
     private void loadAddBookView() {
         if (mTwoPane) {
-            AddBookFragment fragment = null;
+            AddBookFragment fragment;
             FragmentManager fragMgr = getSupportFragmentManager();
             fragment = (AddBookFragment) fragMgr.findFragmentById(R.id.fragment_add_book);
 
@@ -280,7 +279,7 @@ public class BookListActivity extends AppCompatActivity
 
     private void loadAboutView() {
         if (mTwoPane) {
-            AboutFragment fragment = null;
+            AboutFragment fragment;
             FragmentManager fragMgr = getSupportFragmentManager();
             fragment = (AboutFragment) fragMgr.findFragmentById(R.id.fragment_about);
 

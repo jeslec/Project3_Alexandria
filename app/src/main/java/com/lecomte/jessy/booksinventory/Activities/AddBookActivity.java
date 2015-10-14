@@ -99,9 +99,8 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
 
             String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
             int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
-            String isbn = intent.getStringExtra(BookService.EXTRA_ISBN);
 
-            if (command == BookService.FETCH_BOOK) {
+            if (command.equals(BookService.FETCH_BOOK)) {
                 Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
 
                 if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
@@ -125,7 +124,7 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
                 }
             }
 
-            else if (command == BookService.DELETE_BOOK) {
+            else if (command.equals(BookService.DELETE_BOOK)) {
                 Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
 
                 if (result == BookService.DELETE_RESULT_DELETED) {
