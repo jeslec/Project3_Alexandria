@@ -84,8 +84,8 @@ public class BookListFragment extends ListFragment
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.pref_fetch_result))) {
-            Toast.makeText(getActivity(), "Fetch status changed!", Toast.LENGTH_LONG).show();
+        if (key.equals(getString(R.string.pref_delete_result))) {
+            Toast.makeText(getActivity(), "Delete result receivedd!", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -120,10 +120,7 @@ public class BookListFragment extends ListFragment
             }
             // No books records in database
             else {
-                Toast.makeText(getActivity(), R.string.book_list_empty,
-                        Toast.LENGTH_LONG).show();
                 mEmptyView = createViewForEmptyList(false, true);
-
                 if (mEmptyView != null) {
                     getListView().setEmptyView(mEmptyView);
                 }

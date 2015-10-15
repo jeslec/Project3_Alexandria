@@ -120,11 +120,13 @@ public class BookService extends IntentService {
         if (isbn != null) {
             // Delete from "categories" table
             categoryRowsDeleted = getContentResolver().delete(
-                    AlexandriaContract.CategoryEntry.buildCategoryUri(Long.parseLong(isbn)), null, null);
+                    AlexandriaContract.CategoryEntry.buildCategoryUri(Long.parseLong(isbn)), null,
+                    null);
 
             // Delete from "authors" table
             authorRowsDeleted = getContentResolver().delete(
-                    AlexandriaContract.AuthorEntry.buildAuthorUri(Long.parseLong(isbn)), null, null);
+                    AlexandriaContract.AuthorEntry.buildAuthorUri(Long.parseLong(isbn)), null,
+                    null);
 
             // Delete from "books" table
             bookRowsDeleted = getContentResolver().delete(
@@ -140,17 +142,18 @@ public class BookService extends IntentService {
     }
 
     private void sendFetchResultToClient(@FetchResult int result, String isbn) {
-        sendCommandResultToClient(FETCH_BOOK, result, isbn);
-        saveFetchStatus(result);
+        //sendCommandResultToClient(FETCH_BOOK, result, isbn);
+        saveFetchResult(result);
     }
 
     private void sendDeleteResultToClient(@DeleteResult int result, String isbn) {
-        sendCommandResultToClient(DELETE_BOOK, result, isbn);
+        //sendCommandResultToClient(DELETE_BOOK, result, isbn);
+        saveDeleteResult(result);
     }
 
     // Don't call this method directly
     // Should only be called by: sendFetchResultToClient() and sendDeleteResultToClient()
-    private void sendCommandResultToClient(@BookServiceCommand String command,
+    /*private void sendCommandResultToClient(@BookServiceCommand String command,
                                            int result, String isbn) {
         Log.d(TAG, "sendCommandResultToClient() - ISBN: " + isbn);
         Intent intent = new Intent(MESSAGE);
@@ -162,7 +165,7 @@ public class BookService extends IntentService {
         }
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-    }
+    }*/
 
     /**
      * Handle action fetchBook in the provided background thread with the provided
@@ -321,7 +324,8 @@ public class BookService extends IntentService {
         sendFetchResultToClient(FETCH_RESULT_ADDED_TO_DB, isbn);
     }
 
-    private void writeBackBook(String ean, String title, String subtitle, String desc, String imgUrl) {
+    private void writeBackBook(String ean, String title, String subtitle, String desc,
+                               String imgUrl) {
         ContentValues values= new ContentValues();
         values.put(AlexandriaContract.BookEntry._ID, ean);
         values.put(AlexandriaContract.BookEntry.TITLE, title);
@@ -361,11 +365,19 @@ public class BookService extends IntentService {
         spe.commit();
     }
 
-    private void saveFetchStatus(@FetchResult int result) {
+    private void saveFetchResult(@FetchResult int result) {
         Context context = getApplicationContext();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(getString(R.string.pref_fetch_result), result);
+        spe.commit();
+    }
+
+    private void saveDeleteResult(@DeleteResult int result) {
+        Context context = getApplicationContext();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(getString(R.string.pref_delete_result), result);
         spe.commit();
     }
 }

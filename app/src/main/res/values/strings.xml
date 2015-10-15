@@ -30,7 +30,6 @@
     <string name="delete_confirmation_button_text">Yes, delete it!</string>
     <string name="empty_book_list_db_empty">No book information available. You have not entered any books in your library.</string>
     <string name="empty_book_list_no_network">No book information available. The network is not available to fetch book data.</string>
-    <string name="pref_fetch_result">fetch_status</string>
 
     <!-- Fetch results returned by the BookService following a fetch command sent by client -->
     <string name="fetch_result_added_to_db">Book added to your library</string>
@@ -40,5 +39,9 @@
     <string name="fetch_result_server_down">Server down</string>
     <string name="fetch_result_internet_down">Internet down</string>
     <string name="fetch_result_unknown">Unknown server error</string>
+
+    <!-- Preferences keys -->
+    <string name="pref_fetch_result">fetch_result</string>
+    <string name="pref_delete_result">delete_result</string>
 
 </resources>
