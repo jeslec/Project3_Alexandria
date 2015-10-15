@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringDef;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
@@ -135,37 +134,15 @@ public class BookService extends IntentService {
 
         // Send status to client about the delete command
         if (authorRowsDeleted > 0 && categoryRowsDeleted > 0 && bookRowsDeleted > 0) {
-            sendDeleteResultToClient(DELETE_RESULT_DELETED, isbn);
+            saveDeleteResult(DELETE_RESULT_DELETED);
         } else {
-            sendDeleteResultToClient(DELETE_RESULT_NOT_DELETED, isbn);
+            saveDeleteResult(DELETE_RESULT_NOT_DELETED);
         }
-    }
-
-    private void sendFetchResultToClient(@FetchResult int result, String isbn) {
-        //sendCommandResultToClient(FETCH_BOOK, result, isbn);
-        saveFetchResult(result);
     }
 
     private void sendDeleteResultToClient(@DeleteResult int result, String isbn) {
-        //sendCommandResultToClient(DELETE_BOOK, result, isbn);
         saveDeleteResult(result);
     }
-
-    // Don't call this method directly
-    // Should only be called by: sendFetchResultToClient() and sendDeleteResultToClient()
-    /*private void sendCommandResultToClient(@BookServiceCommand String command,
-                                           int result, String isbn) {
-        Log.d(TAG, "sendCommandResultToClient() - ISBN: " + isbn);
-        Intent intent = new Intent(MESSAGE);
-        intent.putExtra(EXTRA_COMMAND, command);
-        intent.putExtra(EXTRA_RESULT, result);
-
-        if (isbn != null) {
-            intent.putExtra(EXTRA_ISBN, isbn);
-        }
-
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-    }*/
 
     /**
      * Handle action fetchBook in the provided background thread with the provided
@@ -191,7 +168,7 @@ public class BookService extends IntentService {
             Log.d(TAG, "fetchBook() - No need to download, this book is already in the database");
 
             if (bookCursor.moveToFirst()) {
-                sendFetchResultToClient(FETCH_RESULT_ALREADY_IN_DB, isbn);
+                saveFetchResult(FETCH_RESULT_ALREADY_IN_DB);
             }
             
             bookCursor.close();
@@ -202,7 +179,7 @@ public class BookService extends IntentService {
 
         // TEST
         if (!Utility.isInternetAvailable(this)) {
-            sendFetchResultToClient(FETCH_RESULT_INTERNET_DOWN, isbn);
+            saveFetchResult(FETCH_RESULT_INTERNET_DOWN);
             return;
         }
 
@@ -260,7 +237,7 @@ public class BookService extends IntentService {
         }
 
         if (bServerDown) {
-            sendFetchResultToClient(FETCH_RESULT_SERVER_DOWN, isbn);
+            saveFetchResult(FETCH_RESULT_SERVER_DOWN);
             return;
         }
 
@@ -282,7 +259,7 @@ public class BookService extends IntentService {
             if (bookJson.has(ITEMS)) {
                 bookArray = bookJson.getJSONArray(ITEMS);
             } else {
-                sendFetchResultToClient(FETCH_RESULT_NOT_FOUND, isbn);
+                saveFetchResult(FETCH_RESULT_NOT_FOUND);
                 return;
             }
 
@@ -316,12 +293,12 @@ public class BookService extends IntentService {
 
         } catch (JSONException e) {
             Log.e(TAG, "Error ", e);
-            sendFetchResultToClient(FETCH_RESULT_SERVER_ERROR, isbn);
+            saveFetchResult(FETCH_RESULT_SERVER_ERROR);
             return;
         }
 
         // Book downloaded and saved to DB
-        sendFetchResultToClient(FETCH_RESULT_ADDED_TO_DB, isbn);
+        saveFetchResult(FETCH_RESULT_ADDED_TO_DB);
     }
 
     private void writeBackBook(String ean, String title, String subtitle, String desc,

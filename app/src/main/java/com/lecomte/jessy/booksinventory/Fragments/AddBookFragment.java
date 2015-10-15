@@ -225,10 +225,6 @@ public class AddBookFragment extends DialogFragment
 
         View rootView = inflater.inflate(R.layout.fragment_add_book, container, false);
 
-        // Hide this dialog's custom title if we are in the 1-pane scenario
-        //int visibility = mTwoPaneLayout? View.VISIBLE : View.GONE;
-        //rootView.findViewById(R.id.add_book_title_frame).setVisibility(visibility);
-
         // Widgets references
         mClearIsbnButton = (ImageButton)rootView.findViewById(R.id.clear_isbn_imageButton);
         mScanIsbnButton = (ImageButton)rootView.findViewById(R.id.scan_isbn_imageButton);

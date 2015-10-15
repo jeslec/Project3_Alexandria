@@ -98,27 +98,12 @@ public class BookListActivity extends AppCompatActivity
                     .findFragmentById(R.id.book_list))
                     .setActivateOnItemClick(true);
         }
-
-        // Register to receive messages from the BookService
-        /*mMessageReceiver = new MessageReceiver();
-        IntentFilter filter = new IntentFilter(BookService.MESSAGE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);*/
     }
 
     private BookListFragment getBookListFragment() {
         FragmentManager fm = getSupportFragmentManager();
         return (BookListFragment)fm.findFragmentById(R.id.book_list);
     }
-
-    /*private void notifyAddBookFragmentToLoadBookData() {
-        FragmentManager fm = getSupportFragmentManager();
-        // For some odd reason, trying to find fragment by Id does not work for this case?!?
-        AddBookFragment addFragment = (AddBookFragment)fm.findFragmentByTag(AddBookFragment.TAG);
-
-        if (addFragment != null) {
-            addFragment.loadBookData();
-        }
-    }*/
 
     private void setSelectedBook(String isbn) {
 
@@ -153,72 +138,6 @@ public class BookListActivity extends AppCompatActivity
             Toast.makeText(this, R.string.book_not_selected, Toast.LENGTH_SHORT).show();
         }
     }
-
-    // Good tutorial on broadcast receivers:
-    //http://www.vogella.com/tutorials/AndroidServices/article.html#servicecommunication_receiver
-    // Receive messages from BookService
-    /*private class MessageReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "MessageReceiver#onReceive()");
-
-            if (intent == null || !intent.hasExtra(BookService.EXTRA_COMMAND) ||
-                    !intent.hasExtra(BookService.EXTRA_RESULT)) {
-                Log.e(TAG, "MessageReceiver() - One of the params sent by the service is invalid");
-                return;
-            }
-
-            String command = intent.getStringExtra(BookService.EXTRA_COMMAND);
-            int result = intent.getIntExtra(BookService.EXTRA_RESULT, 0);
-
-            if (command.equals(BookService.FETCH_BOOK)) {
-                Log.d(TAG, "MessageReceiver#onReceive() - FETCH_BOOK");
-
-                if (result == BookService.FETCH_RESULT_ADDED_TO_DB) {
-                    if (mTwoPane) {
-                        Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
-                        notifyAddBookFragmentToLoadBookData();
-                        *//*Toast.makeText(BookListActivity.this, getResources()
-                                .getString(R.string.fetch_result_added_to_db), Toast.LENGTH_SHORT).show();*//*
-                    }
-                }
-
-                else if (result == BookService.FETCH_RESULT_ALREADY_IN_DB) {
-                    if (mTwoPane) {
-                        Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
-                        notifyAddBookFragmentToLoadBookData();
-                        *//*Toast.makeText(BookListActivity.this, getResources()
-                                .getString(R.string.fetch_result_already_in_db), Toast.LENGTH_SHORT).show();*//*
-                    }
-                }
-
-                *//*else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
-                    *//**//*Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.fetch_result_not_found), Toast.LENGTH_SHORT).show();*//**//*
-                }*//*
-            }
-
-            *//*else if (command.equals(BookService.DELETE_BOOK)) {
-                Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
-
-                if (result == BookService.DELETE_RESULT_DELETED) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_DELETED");
-                }
-
-                else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
-                    Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_NOT_DELETED");
-                    *//**//*Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_not_deleted), Toast.LENGTH_SHORT).show();*//**//*
-                }
-            }*//*
-
-            *//*if (intent.getStringExtra(MESSAGE_KEY)!=null){
-                Toast.makeText(BookListActivity.this, intent.getStringExtra(MESSAGE_KEY),
-                        Toast.LENGTH_LONG).show();
-            }*//*
-        }
-    }*/
 
     private void loadBookDetailsFragment(String isbn) {
         if (mTwoPane) {
@@ -385,14 +304,7 @@ public class BookListActivity extends AppCompatActivity
 
         // This menu option is only available in a 2-pane layout
         else if (id == R.id.menu_delete_book) {
-
             onDeleteBookRequest();
-
-            /*else {
-                Intent deleteBookIntent = new Intent(BookDetailFragment.INTENT_ACTION_DELETE_BOOK);
-                deleteBookIntent.setClass(BookListActivity.this, BookListActivity.class);
-                startActivity(deleteBookIntent);
-            }*/
             return true;
         }
 
@@ -403,11 +315,4 @@ public class BookListActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
-
-    /*@Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy()");
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        super.onDestroy();
-    }*/
 }
