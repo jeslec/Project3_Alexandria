@@ -70,6 +70,7 @@ public class Utility {
         // If no url is specified, just load the default image
         if (url == null) {
             Glide.with(context).load(R.drawable.no_image).into(view);
+            return;
         }
 
         if (url != null && view != null) {
@@ -80,7 +81,7 @@ public class Utility {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
                             Glide.with(context).load(R.drawable.no_image).into(view);
-                            return false;
+                            return true;
                         }
 
                         @Override

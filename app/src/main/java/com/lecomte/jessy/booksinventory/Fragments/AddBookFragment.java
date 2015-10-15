@@ -65,7 +65,8 @@ public class AddBookFragment extends DialogFragment
     private TextView mAuthorTextView;
     private ImageView mBookImage;
     private TextView mCategoryTextView;
-    private String mSavedIsbn = "";
+    private String mIsbnLastLoadedFromDbOrDownloaded = "";
+    private String mIsbnLastEnteredOrScanned = "";
     private Callbacks mCallbacks = null;
     private BookData mBookData = null;
     private boolean mConfigurationChanged = false;
@@ -89,7 +90,7 @@ public class AddBookFragment extends DialogFragment
         Log.d(TAG, "onCreateLoader() - Creating new cursor loader...");
         return new CursorLoader(
                 getActivity(),
-                AlexandriaContract.BookEntry.buildFullBookUri(Long.parseLong(mSavedIsbn)),
+                AlexandriaContract.BookEntry.buildFullBookUri(Long.parseLong(mIsbnLastEnteredOrScanned)),
                 null,
                 null,
                 null,
@@ -316,7 +317,7 @@ public class AddBookFragment extends DialogFragment
         bookIntent.setAction(BookService.FETCH_BOOK);
         Log.d(TAG, "sendFetchBookCommandToService() - Starting BookService with command FETCH_BOOK");
         getActivity().startService(bookIntent);
-        mSavedIsbn = isbn;
+        mIsbnLastEnteredOrScanned = isbn;
     }
 
     // Clear search field and result widgets
@@ -327,7 +328,7 @@ public class AddBookFragment extends DialogFragment
         mSubTitleTextView.setText("");
         mAuthorTextView.setText("");
         mCategoryTextView.setText("");
-        mSavedIsbn = "";
+        mIsbnLastLoadedFromDbOrDownloaded = "";
         mBookImage.setVisibility(View.INVISIBLE);
     }
 
@@ -406,8 +407,8 @@ public class AddBookFragment extends DialogFragment
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.unregisterOnSharedPreferenceChangeListener(this);
 
-        if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
-            mCallbacks.notifyBookSelected(mSavedIsbn);
+        if (!mIsbnLastLoadedFromDbOrDownloaded.isEmpty()) {
+            mCallbacks.notifyBookSelected(mIsbnLastLoadedFromDbOrDownloaded);
         }
 
         super.onPause();
@@ -456,10 +457,12 @@ public class AddBookFragment extends DialogFragment
             case BookService.FETCH_RESULT_ADDED_TO_DB:
                 loadBookData();
                 message = getString(R.string.fetch_result_added_to_db);
+                mIsbnLastLoadedFromDbOrDownloaded = mIsbnLastEnteredOrScanned;
                 break;
             case BookService.FETCH_RESULT_ALREADY_IN_DB:
                 loadBookData();
                 message = getString(R.string.fetch_result_already_in_db);
+                mIsbnLastLoadedFromDbOrDownloaded = mIsbnLastEnteredOrScanned;
                 break;
             case BookService.FETCH_RESULT_NOT_FOUND:
                 message = getString(R.string.fetch_result_not_found);
