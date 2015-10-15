@@ -19,7 +19,6 @@ import com.lecomte.jessy.booksinventory.R;
  */
 public class BookListAdapter extends CursorAdapter {
 
-
     public static class ViewHolder {
         public final ImageView bookCover;
         public final TextView bookTitle;
@@ -42,9 +41,14 @@ public class BookListAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         if (viewHolder != null) {
-            String imgUrl = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-            if (imgUrl != null) {
-                Glide.with(context).load(imgUrl).into(viewHolder.bookCover);
+            int columnIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL);
+            String imageUrl = cursor.getString(columnIndex);
+
+            if (imageUrl == null) {
+                Glide.with(context).load(R.drawable.no_image).into(viewHolder.bookCover);
+            }
+            else {
+                Glide.with(context).load(imageUrl).into(viewHolder.bookCover);
             }
 
             String bookTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));

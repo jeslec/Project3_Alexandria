@@ -5,16 +5,16 @@ package com.lecomte.jessy.booksinventory.Other;
  */
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.R;
+import com.lecomte.jessy.booksinventory.Services.BookService;
 
 /**
  * Created by Jessy on 2015-09-22.
@@ -44,6 +44,13 @@ public class Utility {
             Log.d(TAG, "isTwoPaneLayout() - NotFoundException!");
         }
         return bTwoPane;
+    }
+
+    @SuppressWarnings("ResourceType")
+    static public @BookService.FetchResult int getFetchStatus(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getInt(context.getString(R.string.pref_fetch_result),
+                BookService.FETCH_RESULT_UNKNOWN);
     }
 }
 

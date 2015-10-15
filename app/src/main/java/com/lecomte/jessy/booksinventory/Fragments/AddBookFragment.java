@@ -3,8 +3,10 @@ package com.lecomte.jessy.booksinventory.Fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -35,12 +37,14 @@ import com.lecomte.jessy.booksinventory.Data.BookData;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
+import com.lecomte.jessy.booksinventory.Services.BookService.FetchResult;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class AddBookFragment extends DialogFragment
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = AddBookFragment.class.getSimpleName();
     private static final int LOADER_ID = 30;
@@ -265,7 +269,6 @@ public class AddBookFragment extends DialogFragment
 
             @Override
             public void afterTextChanged(Editable editable) {
-                Log.d(TAG, "afterTextChanged(): " + editable + " [Length: " + editable.length() + "]");
                 String isbn = editable.toString();
 
                 if (isbn.length() < 13) {
@@ -310,24 +313,10 @@ public class AddBookFragment extends DialogFragment
                 sendFetchBookCommandToService(isbn);
             }
         });
-
-        //clearWidgets();
-
-        //mDialogTitle.setEnabled(false);
-
         return rootView;
     }
 
     private void sendFetchBookCommandToService(String isbn) {
-
-        // BUG FIX: Prevent app from crashing when internet is not available
-        if (!Utility.isInternetAvailable(getActivity())) {
-            Toast.makeText(getActivity(), R.string.internet_not_available,
-                    Toast.LENGTH_LONG).show();
-            mSavedIsbn = "";
-            return;
-        }
-
         Intent bookIntent = new Intent(getActivity(), BookService.class);
         bookIntent.putExtra(BookService.EXTRA_ISBN, isbn);
         bookIntent.setAction(BookService.FETCH_BOOK);
@@ -419,10 +408,31 @@ public class AddBookFragment extends DialogFragment
     @Override
     public void onPause() {
         Log.d(TAG, "onPause()");
-        super.onPause();
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
 
         if (mSavedIsbn != null && !mSavedIsbn.isEmpty()) {
             mCallbacks.notifyBookSelected(mSavedIsbn);
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
+        super.onResume();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (sharedPreferences.contains(key) && key.equals(getString(R.string.pref_fetch_result))) {
+            @FetchResult int result = sharedPreferences.getInt(getString(R.string.pref_fetch_result),
+                    BookService.FETCH_RESULT_UNKNOWN);
+            showFetchCommandResult(result);
+            Log.d(TAG, String.format("onSharedPreferenceChanged() - [Key: %s] [Result: %d]", key, result));
         }
     }
 
@@ -443,5 +453,35 @@ public class AddBookFragment extends DialogFragment
         shareBookIntent.putExtra(Intent.EXTRA_TEXT, mTitleTextView.getText());
         shareBookIntent.setType("text/plain");
         startActivity(shareBookIntent);
+    }
+
+    private void showFetchCommandResult(@FetchResult int result) {
+        String message;
+
+        switch (result) {
+            case BookService.FETCH_RESULT_ADDED_TO_DB:
+                loadBookData();
+                message = getString(R.string.fetch_result_added_to_db);
+                break;
+            case BookService.FETCH_RESULT_ALREADY_IN_DB:
+                loadBookData();
+                message = getString(R.string.fetch_result_already_in_db);
+                break;
+            case BookService.FETCH_RESULT_NOT_FOUND:
+                message = getString(R.string.fetch_result_not_found);
+                break;
+            case BookService.FETCH_RESULT_SERVER_ERROR:
+                message = getString(R.string.fetch_result_server_error);
+                break;
+            case BookService.FETCH_RESULT_SERVER_DOWN:
+                message = getString(R.string.fetch_result_server_down);
+                break;
+            case BookService.FETCH_RESULT_INTERNET_DOWN:
+                message = getString(R.string.fetch_result_internet_down);
+                break;
+            default:
+                message = getString(R.string.fetch_result_unknown);
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -183,8 +183,8 @@ public class BookListActivity extends AppCompatActivity
                     if (mTwoPane) {
                         Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ADDED_TO_DB");
                         notifyAddBookFragmentToLoadBookData();
-                        Toast.makeText(BookListActivity.this, getResources()
-                                .getString(R.string.book_added_to_library), Toast.LENGTH_SHORT).show();
+                        /*Toast.makeText(BookListActivity.this, getResources()
+                                .getString(R.string.fetch_result_added_to_db), Toast.LENGTH_SHORT).show();*/
                     }
                 }
 
@@ -192,19 +192,19 @@ public class BookListActivity extends AppCompatActivity
                     if (mTwoPane) {
                         Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_ALREADY_IN_DB");
                         notifyAddBookFragmentToLoadBookData();
-                        Toast.makeText(BookListActivity.this, getResources()
-                                .getString(R.string.book_already_in_library), Toast.LENGTH_SHORT).show();
+                        /*Toast.makeText(BookListActivity.this, getResources()
+                                .getString(R.string.fetch_result_already_in_db), Toast.LENGTH_SHORT).show();*/
                     }
                 }
 
-                else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
+                /*else if (result == BookService.FETCH_RESULT_NOT_FOUND) {
                     Log.d(TAG, "MessageReceiver#onReceive() - FETCH_RESULT_NOT_FOUND");
-                    Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_not_found), Toast.LENGTH_SHORT).show();
-                }
+                    *//*Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.fetch_result_not_found), Toast.LENGTH_SHORT).show();*//*
+                }*/
             }
 
-            else if (command.equals(BookService.DELETE_BOOK)) {
+            /*else if (command.equals(BookService.DELETE_BOOK)) {
                 Log.d(TAG, "MessageReceiver#onReceive() - DELETE_BOOK");
 
                 if (result == BookService.DELETE_RESULT_DELETED) {
@@ -213,10 +213,10 @@ public class BookListActivity extends AppCompatActivity
 
                 else if (result == BookService.DELETE_RESULT_NOT_DELETED) {
                     Log.d(TAG, "MessageReceiver#onReceive() - DELETE_RESULT_NOT_DELETED");
-                    Toast.makeText(BookListActivity.this, getResources()
-                            .getString(R.string.book_not_deleted), Toast.LENGTH_SHORT).show();
+                    *//*Toast.makeText(BookListActivity.this, getResources()
+                            .getString(R.string.book_not_deleted), Toast.LENGTH_SHORT).show();*//*
                 }
-            }
+            }*/
 
             /*if (intent.getStringExtra(MESSAGE_KEY)!=null){
                 Toast.makeText(BookListActivity.this, intent.getStringExtra(MESSAGE_KEY),

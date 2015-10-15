@@ -1,12 +1,13 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -15,9 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
@@ -26,8 +25,6 @@ import com.lecomte.jessy.booksinventory.Other.BookListAdapter;
 import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 import com.lecomte.jessy.booksinventory.Services.BookService;
-
-import org.w3c.dom.Text;
 
 /**
  * A list fragment representing a list of Books. This fragment
@@ -39,7 +36,8 @@ import org.w3c.dom.Text;
  * interface.
  */
 public class BookListFragment extends ListFragment
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = BookListFragment.class.getSimpleName();
     private static final String SELECTED_ITEM_INDEX = BuildConfig.APPLICATION_ID + ".SELECTED_ITEM_INDEX";
@@ -72,7 +70,23 @@ public class BookListFragment extends ListFragment
 
     @Override
     public void onResume() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
         super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.pref_fetch_result))) {
+            Toast.makeText(getActivity(), "Fetch status changed!", Toast.LENGTH_LONG).show();
+        }
     }
 
     private String getIsbnAtIndex(Cursor cursor, int index) {

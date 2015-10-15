@@ -22,10 +22,6 @@
 
     <!-- Book detail screen -->
     <string name="book_detail_ShareButton">Share</string>
-    <string name="book_added_to_library">Bookd added to your library</string>
-    <string name="book_already_in_library">This book is already in your library</string>
-    <string name="book_not_deleted">The book could not be deleted</string>
-    <string name="book_not_found">Book not found</string>
     <string name="book_not_selected">You must first select a book from the list</string>
 
     <!-- Delete Book dialog -->
@@ -34,6 +30,15 @@
     <string name="delete_confirmation_button_text">Yes, delete it!</string>
     <string name="empty_book_list_db_empty">No book information available. You have not entered any books in your library.</string>
     <string name="empty_book_list_no_network">No book information available. The network is not available to fetch book data.</string>
-    <string name="pref_book_service_command_status">fetch_status</string>
+    <string name="pref_fetch_result">fetch_status</string>
+
+    <!-- Fetch results returned by the BookService following a fetch command sent by client -->
+    <string name="fetch_result_added_to_db">Book added to your library</string>
+    <string name="fetch_result_already_in_db">This book was already in your library</string>
+    <string name="fetch_result_not_found">Book not found</string>
+    <string name="fetch_result_server_error">Server error</string>
+    <string name="fetch_result_server_down">Server down</string>
+    <string name="fetch_result_internet_down">Internet down</string>
+    <string name="fetch_result_unknown">Unknown server error</string>
 
 </resources>

@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 
 import org.json.JSONArray;
@@ -61,9 +62,11 @@ public class BookService extends IntentService {
     public static final int FETCH_RESULT_NOT_FOUND      = 3;
     public static final int FETCH_RESULT_SERVER_ERROR   = 4;
     public static final int FETCH_RESULT_SERVER_DOWN    = 5;
+    public static final int FETCH_RESULT_INTERNET_DOWN  = 6;
+    public static final int FETCH_RESULT_UNKNOWN        = 7;
 
     @IntDef( {FETCH_RESULT_ADDED_TO_DB, FETCH_RESULT_ALREADY_IN_DB, FETCH_RESULT_NOT_FOUND,
-            FETCH_RESULT_SERVER_ERROR, FETCH_RESULT_SERVER_DOWN} )
+            FETCH_RESULT_SERVER_ERROR, FETCH_RESULT_INTERNET_DOWN, FETCH_RESULT_SERVER_DOWN} )
     @Retention(RetentionPolicy.SOURCE)
     public @interface FetchResult {}
 
@@ -89,6 +92,11 @@ public class BookService extends IntentService {
             if (FETCH_BOOK.equals(action)) {
                 final String ean = intent.getStringExtra(EXTRA_ISBN);
                 Log.d(TAG, "onHandleIntent() - Action: FETCH_BOOK [ISBN: " + ean + "]");
+
+                // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()
+                // will get called every time we set the result and not only when value has changed
+                deleteFetchResultPreference();
+
                 fetchBook(ean);
             }
 
@@ -188,6 +196,12 @@ public class BookService extends IntentService {
         }
 
         bookCursor.close();
+
+        // TEST
+        if (!Utility.isInternetAvailable(this)) {
+            sendFetchResultToClient(FETCH_RESULT_INTERNET_DOWN, isbn);
+            return;
+        }
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -337,11 +351,21 @@ public class BookService extends IntentService {
         }
     }
 
+    // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()
+    // will get called every time we set the result and not only when value has changed
+    private void deleteFetchResultPreference() {
+        Context context = getApplicationContext();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.remove(getString(R.string.pref_fetch_result));
+        spe.commit();
+    }
+
     private void saveFetchStatus(@FetchResult int result) {
         Context context = getApplicationContext();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor spe = sp.edit();
-        spe.putInt(getString(R.string.pref_book_service_command_status), result);
+        spe.putInt(getString(R.string.pref_fetch_result), result);
         spe.commit();
     }
 }
