@@ -132,10 +132,8 @@ public class AddBookFragment extends DialogFragment
 
         // Image URL
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        if (imgUrl != null) {
-            Glide.with(this).load(imgUrl).into(mBookImage);
-            mBookImage.setVisibility(View.VISIBLE);
-        }
+        Utility.loadImage(getActivity(), imgUrl, mBookImage);
+        mBookImage.setVisibility(View.VISIBLE);
 
         // Save book info so we can reuse it when there's a configuration change
         mBookData = new BookData(bookTitle, bookSubTitle, mAuthorTextView.getText().toString(),

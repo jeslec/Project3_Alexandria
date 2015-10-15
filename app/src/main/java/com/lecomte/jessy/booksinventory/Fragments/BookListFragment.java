@@ -1,6 +1,7 @@
 package com.lecomte.jessy.booksinventory.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -13,6 +14,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -69,6 +71,15 @@ public class BookListFragment extends ListFragment
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // TEST
+        mBookListAdapter = new BookListAdapter(getActivity(), null, 0);
+        setListAdapter(mBookListAdapter);
+    }
+
+    @Override
     public void onResume() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.registerOnSharedPreferenceChangeListener(this);
@@ -86,6 +97,10 @@ public class BookListFragment extends ListFragment
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.pref_delete_result))) {
             Toast.makeText(getActivity(), "Delete result receivedd!", Toast.LENGTH_LONG).show();
+        }
+
+        else if (key.equals(getString(R.string.pref_fetch_result))) {
+            Toast.makeText(getActivity(), "Updating Empty ListView image & text...", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -105,11 +120,93 @@ public class BookListFragment extends ListFragment
         return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
     }
 
+    /*private void showFetchCommandResult(@BookService.FetchResult int result) {
+        String message;
+
+        switch (result) {
+            case BookService.FETCH_RESULT_ADDED_TO_DB:
+                loadBookData();
+                message = getString(R.string.fetch_result_added_to_db);
+                break;
+            case BookService.FETCH_RESULT_ALREADY_IN_DB:
+                loadBookData();
+                message = getString(R.string.fetch_result_already_in_db);
+                break;
+            case BookService.FETCH_RESULT_NOT_FOUND:
+                message = getString(R.string.fetch_result_not_found);
+                break;
+            case BookService.FETCH_RESULT_SERVER_ERROR:
+                message = getString(R.string.fetch_result_server_error);
+                break;
+            case BookService.FETCH_RESULT_SERVER_DOWN:
+                message = getString(R.string.fetch_result_server_down);
+                break;
+            case BookService.FETCH_RESULT_INTERNET_DOWN:
+                message = getString(R.string.fetch_result_internet_down);
+                break;
+            default:
+                message = getString(R.string.fetch_result_unknown);
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+    }*/
+
     void updateEmptyView(Cursor data) {
         // No data
         if (!data.moveToFirst()) {
+
+            // Get fetch result from Preferences
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String fetchResultKey = getString(R.string.pref_fetch_result);
+
+            if (!sp.contains(fetchResultKey)) {
+                // Internet not available
+                if (!Utility.isInternetAvailable(getActivity())) {
+                    mEmptyView = createViewForEmptyList(true, false);
+                    if (mEmptyView != null) {
+                        getListView().setEmptyView(mEmptyView);
+                    }
+                }
+                // No books records in database
+                else {
+                    mEmptyView = createViewForEmptyList(false, true);
+                    if (mEmptyView != null) {
+                        getListView().setEmptyView(mEmptyView);
+                    }
+                }
+                return;
+            }
+
+            @BookService.FetchResult int result = sp.getInt(fetchResultKey,
+                    BookService.FETCH_RESULT_UNKNOWN);
+            String message;
+
+            switch (result) {
+                case BookService.FETCH_RESULT_ADDED_TO_DB:
+                    message = getString(R.string.fetch_result_added_to_db);
+                    break;
+                case BookService.FETCH_RESULT_ALREADY_IN_DB:
+                    message = getString(R.string.fetch_result_already_in_db);
+                    break;
+                case BookService.FETCH_RESULT_NOT_FOUND:
+                    message = getString(R.string.fetch_result_not_found);
+                    break;
+                case BookService.FETCH_RESULT_SERVER_ERROR:
+                    message = getString(R.string.fetch_result_server_error);
+                    break;
+                case BookService.FETCH_RESULT_SERVER_DOWN:
+                    message = getString(R.string.fetch_result_server_down);
+                    break;
+                case BookService.FETCH_RESULT_INTERNET_DOWN:
+                    message = getString(R.string.fetch_result_internet_down);
+                    break;
+                default:
+                    message = getString(R.string.fetch_result_unknown);
+            }
+
+            mEmptyView = createViewForEmptyList(false, true);
+
             // Internet not available
-            if (!Utility.isInternetAvailable(getActivity())) {
+            /*if (!Utility.isInternetAvailable(getActivity())) {
                 Toast.makeText(getActivity(), R.string.internet_not_available,
                         Toast.LENGTH_LONG).show();
                 mEmptyView = createViewForEmptyList(true, false);
@@ -124,7 +221,7 @@ public class BookListFragment extends ListFragment
                 if (mEmptyView != null) {
                     getListView().setEmptyView(mEmptyView);
                 }
-            }
+            }*/
         }
     }
 
@@ -135,7 +232,7 @@ public class BookListFragment extends ListFragment
         updateEmptyView(data);
 
         // If the app was just started, the adapter is not set
-        if (mBookListAdapter == null) {
+        /*if (mBookListAdapter == null) {
             mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
             setListAdapter(mBookListAdapter);
 
@@ -144,12 +241,12 @@ public class BookListFragment extends ListFragment
             }
             // Only call this if we are in a 2-pane layout
             setSelectedBookRunnable();
-        }
+        }*/
 
         // Just load the new data into the books list
-        else {
+        //else {
             mBookListAdapter.swapCursor(data);
-        }
+        //}
 
         mCallbacks.onBookListLoadFinished(mBookListAdapter.getCount());
 
@@ -356,7 +453,6 @@ public class BookListFragment extends ListFragment
         else {
             viewStub.setLayoutResource(R.layout.empty_book_list_db_empty);
         }
-
 
         /*viewStub.setGravity(Gravity.CENTER_VERTICAL
                 | Gravity.CENTER_HORIZONTAL);*/

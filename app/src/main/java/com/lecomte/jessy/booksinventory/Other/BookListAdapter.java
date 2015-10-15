@@ -43,13 +43,7 @@ public class BookListAdapter extends CursorAdapter {
         if (viewHolder != null) {
             int columnIndex = cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL);
             String imageUrl = cursor.getString(columnIndex);
-
-            if (imageUrl == null) {
-                Glide.with(context).load(R.drawable.no_image).into(viewHolder.bookCover);
-            }
-            else {
-                Glide.with(context).load(imageUrl).into(viewHolder.bookCover);
-            }
+            Utility.loadImage(context, imageUrl, viewHolder.bookCover);
 
             String bookTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
             if (bookTitle != null) {
