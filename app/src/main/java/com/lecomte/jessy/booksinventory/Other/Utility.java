@@ -11,6 +11,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import android.preference.PreferenceManager;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -52,11 +54,49 @@ public class Utility {
         return bTwoPane;
     }
 
+    // Return fetch status (int) or -1 if key was not found in SharedPreferences
     @SuppressWarnings("ResourceType")
-    static public @BookService.FetchResult int getFetchStatus(Context context) {
+    static public @BookService.FetchResult int getFetchResult(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         return sp.getInt(context.getString(R.string.pref_fetch_result),
                 BookService.FETCH_RESULT_UNKNOWN);
+    }
+
+    static public String getFetchResultDesc(Context context, @BookService.FetchResult int result) {
+        @StringRes int resultRes = -1;
+        String resultDesc = "";
+        switch (result) {
+            case BookService.FETCH_RESULT_ADDED_TO_DB:
+                break;
+
+            case BookService.FETCH_RESULT_ALREADY_IN_DB:
+                break;
+
+            case BookService.FETCH_RESULT_NOT_FOUND:
+                resultRes = R.string.fetch_result_not_found;
+                break;
+
+            case BookService.FETCH_RESULT_SERVER_ERROR:
+                resultRes = R.string.fetch_result_server_error;
+                break;
+
+            case BookService.FETCH_RESULT_SERVER_DOWN:
+                resultRes = R.string.fetch_result_server_down;
+                break;
+
+            case BookService.FETCH_RESULT_INTERNET_DOWN:
+                resultRes = R.string.fetch_result_internet_down;
+                break;
+
+            default:
+                resultRes = R.string.fetch_result_unknown;
+                break;
+        }
+
+        if (resultRes != -1) {
+            resultDesc = context.getString(resultRes);
+        }
+        return resultDesc;
     }
 
     // Download (if not already in cache) then load the image at url into the specified view
@@ -91,6 +131,15 @@ public class Utility {
                     })
                     .into(view);
         }
+    }
+
+    // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()
+    // will get called every time we set the result and not only when value has changed
+    public static void deleteFetchResultPreference(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.remove(context.getString(R.string.pref_fetch_result));
+        spe.commit();
     }
 }
 

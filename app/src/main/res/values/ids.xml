@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="empty_view_stub" type="id">10000000</item>
+</resources>

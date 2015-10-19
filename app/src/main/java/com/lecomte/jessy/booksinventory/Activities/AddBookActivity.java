@@ -53,6 +53,11 @@ public class AddBookActivity extends AppCompatActivity implements AddBookFragmen
     }
 
     @Override
+    public void onFetchError() {
+        // Do nothing in single-pane scenerio
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
     }

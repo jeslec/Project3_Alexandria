@@ -91,11 +91,6 @@ public class BookService extends IntentService {
             if (FETCH_BOOK.equals(action)) {
                 final String ean = intent.getStringExtra(EXTRA_ISBN);
                 Log.d(TAG, "onHandleIntent() - Action: FETCH_BOOK [ISBN: " + ean + "]");
-
-                // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()
-                // will get called every time we set the result and not only when value has changed
-                deleteFetchResultPreference();
-
                 fetchBook(ean);
             }
 
@@ -190,6 +185,7 @@ public class BookService extends IntentService {
 
         try {
             final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
+            //final String FORECAST_BASE_URL = "https://www.google/?";
             final String QUERY_PARAM = "q";
             final String ISBN_PARAM = "isbn:" + isbn;
 
@@ -330,16 +326,6 @@ public class BookService extends IntentService {
             getContentResolver().insert(AlexandriaContract.CategoryEntry.CONTENT_URI, values);
             values= new ContentValues();
         }
-    }
-
-    // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()
-    // will get called every time we set the result and not only when value has changed
-    private void deleteFetchResultPreference() {
-        Context context = getApplicationContext();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor spe = sp.edit();
-        spe.remove(getString(R.string.pref_fetch_result));
-        spe.commit();
     }
 
     private void saveFetchResult(@FetchResult int result) {

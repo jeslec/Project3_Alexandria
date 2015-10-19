@@ -124,6 +124,13 @@ public class BookListActivity extends AppCompatActivity
         loadBookDetailsView(isbn);
     }
 
+    @Override
+    public void onFetchError() {
+        if (getBookListFragment() != null) {
+            getBookListFragment().reloadList();
+        }
+    }
+
     public void onDeleteBookRequest() {
         boolean bBookDeleted = false;
         BookListFragment bookListFragment = (BookListFragment)getSupportFragmentManager()

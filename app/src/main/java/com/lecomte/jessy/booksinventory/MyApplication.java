@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp.StethoInterceptor;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -20,6 +21,9 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Just to make sure there is no left-over from a previous run
+        Utility.deleteFetchResultPreference(this);
 
         // Create an InitializerBuilder
         Stetho.InitializerBuilder initializerBuilder =

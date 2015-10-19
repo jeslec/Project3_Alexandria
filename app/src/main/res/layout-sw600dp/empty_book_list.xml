@@ -10,18 +10,16 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="centerInside"
-        android:src="@drawable/no_internet" />
+        android:scaleType="centerInside"/>
 
     <TextView
-        android:id="@+id/empty_book_list_TextView"
+        android:id="@+id/empty_book_list_Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
         android:textStyle="bold"
-        android:textSize="16sp"
-        android:text="@string/empty_book_list_no_network" />
+        android:textSize="16sp"/>
 
 </LinearLayout>

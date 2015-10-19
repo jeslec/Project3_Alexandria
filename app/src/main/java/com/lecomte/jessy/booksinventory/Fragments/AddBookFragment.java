@@ -149,6 +149,7 @@ public class AddBookFragment extends DialogFragment
     // Container Activity must implement this interface
     public interface Callbacks {
         public void notifyBookSelected(String isbn);
+        void onFetchError();
     }
 
     @Override
@@ -423,12 +424,13 @@ public class AddBookFragment extends DialogFragment
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (sharedPreferences.contains(key) && key.equals(getString(R.string.pref_fetch_result))) {
+        mCallbacks.onFetchError();
+        /*if (sharedPreferences.contains(key) && key.equals(getString(R.string.pref_fetch_result))) {
             @FetchResult int result = sharedPreferences.getInt(getString(R.string.pref_fetch_result),
                     BookService.FETCH_RESULT_UNKNOWN);
             showFetchCommandResult(result);
             Log.d(TAG, String.format("onSharedPreferenceChanged() - [Key: %s] [Result: %d]", key, result));
-        }
+        }*/
     }
 
     //http://stackoverflow.com/questions/12433397/android-dialogfragment-disappears-after-orientation-change#12434038
@@ -454,6 +456,9 @@ public class AddBookFragment extends DialogFragment
         String message;
 
         switch (result) {
+
+            // Things went well...
+
             case BookService.FETCH_RESULT_ADDED_TO_DB:
                 loadBookData();
                 message = getString(R.string.fetch_result_added_to_db);
@@ -464,6 +469,9 @@ public class AddBookFragment extends DialogFragment
                 message = getString(R.string.fetch_result_already_in_db);
                 mIsbnLastLoadedFromDbOrDownloaded = mIsbnLastEnteredOrScanned;
                 break;
+
+            // Something went wrong...
+
             case BookService.FETCH_RESULT_NOT_FOUND:
                 message = getString(R.string.fetch_result_not_found);
                 break;
