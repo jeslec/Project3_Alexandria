@@ -184,8 +184,8 @@ public class BookService extends IntentService {
         boolean bServerDown = false;
 
         try {
-            //final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
-            final String FORECAST_BASE_URL = "https://www.google/?";
+            final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
+            //final String FORECAST_BASE_URL = "https://www.google/?";
             final String QUERY_PARAM = "q";
             final String ISBN_PARAM = "isbn:" + isbn;
 

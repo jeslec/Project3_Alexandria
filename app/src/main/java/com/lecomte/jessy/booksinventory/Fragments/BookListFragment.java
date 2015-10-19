@@ -237,7 +237,6 @@ public class BookListFragment extends ListFragment
 
     // Find a way to refresh the empty view
     public void reloadList() {
-        Toast.makeText(getActivity(), "Reloading list...", Toast.LENGTH_SHORT).show();
         getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 

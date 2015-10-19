@@ -424,13 +424,24 @@ public class AddBookFragment extends DialogFragment
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+        // Inform the main activity of the fetch result
         mCallbacks.onFetchError();
-        /*if (sharedPreferences.contains(key) && key.equals(getString(R.string.pref_fetch_result))) {
-            @FetchResult int result = sharedPreferences.getInt(getString(R.string.pref_fetch_result),
-                    BookService.FETCH_RESULT_UNKNOWN);
-            showFetchCommandResult(result);
-            Log.d(TAG, String.format("onSharedPreferenceChanged() - [Key: %s] [Result: %d]", key, result));
-        }*/
+
+        if (key.equals(getString(R.string.pref_fetch_result))) {
+            // Get the error message (if any) to display to the user in the empty view
+            @BookService.FetchResult int fetchResult = Utility.getFetchResult(getActivity());
+            String fetchResultDesc = Utility.getFetchResultDesc(getActivity(), fetchResult);
+
+            // The fetch book command was a success
+            if (fetchResultDesc.isEmpty()) {
+                loadBookData();
+            }
+            // An error occurred - Book was not fetched
+            else {
+                Toast.makeText(getActivity(), fetchResultDesc, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     //http://stackoverflow.com/questions/12433397/android-dialogfragment-disappears-after-orientation-change#12434038
@@ -450,43 +461,5 @@ public class AddBookFragment extends DialogFragment
         shareBookIntent.putExtra(Intent.EXTRA_TEXT, mTitleTextView.getText());
         shareBookIntent.setType("text/plain");
         startActivity(shareBookIntent);
-    }
-
-    private void showFetchCommandResult(@FetchResult int result) {
-        String message;
-
-        switch (result) {
-
-            // Things went well...
-
-            case BookService.FETCH_RESULT_ADDED_TO_DB:
-                loadBookData();
-                message = getString(R.string.fetch_result_added_to_db);
-                mIsbnLastLoadedFromDbOrDownloaded = mIsbnLastEnteredOrScanned;
-                break;
-            case BookService.FETCH_RESULT_ALREADY_IN_DB:
-                loadBookData();
-                message = getString(R.string.fetch_result_already_in_db);
-                mIsbnLastLoadedFromDbOrDownloaded = mIsbnLastEnteredOrScanned;
-                break;
-
-            // Something went wrong...
-
-            case BookService.FETCH_RESULT_NOT_FOUND:
-                message = getString(R.string.fetch_result_not_found);
-                break;
-            case BookService.FETCH_RESULT_SERVER_ERROR:
-                message = getString(R.string.fetch_result_server_error);
-                break;
-            case BookService.FETCH_RESULT_SERVER_DOWN:
-                message = getString(R.string.fetch_result_server_down);
-                break;
-            case BookService.FETCH_RESULT_INTERNET_DOWN:
-                message = getString(R.string.fetch_result_internet_down);
-                break;
-            default:
-                message = getString(R.string.fetch_result_unknown);
-        }
-        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }
