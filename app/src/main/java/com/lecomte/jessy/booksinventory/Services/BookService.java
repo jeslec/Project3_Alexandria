@@ -329,6 +329,13 @@ public class BookService extends IntentService {
     }
 
     private void saveFetchResult(@FetchResult int result) {
+        // Every time we fetch a book, we want onSharedPreferenceChanged() to get triggered
+        // If we don't delete this key, it will not get triggered if this result is the same as
+        // the previous fetch result (e.g. You download a book from server and it works, then you
+        // download another book and it works again. In that case, since the status of the fetch
+        // (success) is the same, onSharedPrerenceChanged() would not get triggered)
+        Utility.deleteFetchResultPreference(this);
+
         Context context = getApplicationContext();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor spe = sp.edit();

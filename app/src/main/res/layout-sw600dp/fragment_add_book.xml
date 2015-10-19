@@ -109,7 +109,8 @@
                     android:id="@+id/book_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:contentDescription="@null"/>
+                    android:contentDescription="@null"
+                    android:adjustViewBounds="true"/>
             </LinearLayout>
 
             <!-- Right section: 50% of width -->

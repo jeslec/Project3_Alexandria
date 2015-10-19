@@ -12,7 +12,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_marginRight="6dip"
-        android:contentDescription="@null"/>
+        android:contentDescription="@null"
+        android:adjustViewBounds="true"/>
 
     <TextView
         android:id="@+id/book_list_item_Title"
