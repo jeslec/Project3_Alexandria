@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +48,7 @@ public class BookListFragment extends ListFragment
     private Callbacks mCallbacks = null;
     private BookListAdapter mBookListAdapter;
     TextView mEmptyListTextView;
+    ImageView mEmptyListImageView;
     private String mFetchResultDesc = "";
     private boolean mDeleteBookInProgress = false;
 
@@ -247,22 +249,27 @@ public class BookListFragment extends ListFragment
         mBookListAdapter.swapCursor(data);
 
         // If the list is empty, we need to inform the user of the reason why
-        if (getListView().getCount() == 0 && mEmptyListTextView != null) {
+        if (getListView().getCount() == 0 && mEmptyListTextView != null &&
+                mEmptyListImageView != null) {
 
             // No fetch operation occurred (we don't have a result of such an operation)
             if (mFetchResultDesc.isEmpty()) {
                 // Check if the network is available
                 if (!Utility.isInternetAvailable(getActivity())) {
                     mEmptyListTextView.setText("Internet disabled!");
+                    mEmptyListImageView.setBackgroundResource(R.drawable.no_internet);
                 }
                 // Everything is okay, no books displayed because there's no books in the database
                 else {
                     mEmptyListTextView.setText("No books in DB!");
+                    mEmptyListImageView.setBackgroundResource(R.drawable.no_books);
                 }
             }
             // Show the result of the last fetch operation
             else {
                 mEmptyListTextView.setText(mFetchResultDesc);
+                // For now, we use a default image for all server errors
+                mEmptyListImageView.setBackgroundResource(R.drawable.server_issue);
             }
         }
 
@@ -354,9 +361,7 @@ public class BookListFragment extends ListFragment
             @Override
             public void onInflate(ViewStub stub, View inflated) {
                 mEmptyListTextView = (TextView) inflated.findViewById(R.id.empty_book_list_Text);
-                if (mEmptyListTextView != null) {
-                    Toast.makeText(getActivity(), "emptyView.onInflate()", Toast.LENGTH_SHORT).show();
-                }
+                mEmptyListImageView = (ImageView) inflated.findViewById(R.id.empty_book_list_Image);
             }
         });
 
