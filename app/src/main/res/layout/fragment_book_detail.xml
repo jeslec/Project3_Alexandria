@@ -42,7 +42,8 @@
                 android:id="@+id/book_detail_Image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:contentDescription="@null"/>
 
         </LinearLayout>
 
@@ -74,7 +75,8 @@
                 android:layout_height="wrap_content"
                 android:background="@android:drawable/ic_menu_delete"
                 android:layout_marginTop="@dimen/book_detail_deleteButton_marginTop"
-                tools:ignore="InconsistentLayout"/>
+                tools:ignore="InconsistentLayout"
+                android:contentDescription="@string/book_detail_DeleteButton_contentDesc"/>
 
         </LinearLayout>
 

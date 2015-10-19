@@ -19,7 +19,6 @@ import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lecomte.jessy.booksinventory.BuildConfig;
 import com.lecomte.jessy.booksinventory.Data.AlexandriaContract;
@@ -111,56 +110,16 @@ public class BookListFragment extends ListFragment
         Log.d(TAG, "onSharedPreferenceChanged() - key: " + key);
 
         if (key.equals(getString(R.string.pref_delete_result))) {
-            Toast.makeText(getActivity(), "Delete result receivedd!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity(), "Delete result receivedd!", Toast.LENGTH_LONG).show();
         }
-
-        /*if (mEmptyListTextView != null) {
-            mEmptyListTextView.setText("allo le monde!");
-        }*/
 
         else if (key.equals(getString(R.string.pref_fetch_result))) {
 
             // Get the error message (if any) to display to the user in the empty view
             @BookService.FetchResult int fetchResult = Utility.getFetchResult(getActivity());
             mFetchResultDesc = Utility.getFetchResultDesc(getActivity(), fetchResult);
-
-            /*// A fetch book error occurred and the boook list is empty
-            if (mFetchResultDesc.isEmpty()) {
-                //setEmptyListView(null);
-            }
-
-            else if (getListView().getCount() == 0) {
-                //setEmptyListView(fetchResultDesc);
-            }*/
         }
     }
-
-    /*private void setEmptyListView(String fetchResultDesc) {
-        ViewGroup parent = (ViewGroup) getListView().getParent();
-        ViewStub viewStub = new ViewStub(getActivity(), R.layout.empty_book_list_db_empty);
-        viewStub.setInflatedId(R.id.empty_view_stub);
-        parent.addView(viewStub);
-        View v = viewStub.inflate();
-
-        TextView emptyListTextView = (TextView) v.findViewById(R.id.empty_book_list_TextView);
-        if (emptyListTextView != null) {
-            emptyListTextView.setText(fetchResultDesc);
-        }
-        //v.setVisibility(View.GONE);
-    }*/
-
-    /*private void setEmptyListView(@StringRes int stringId) {
-        ViewGroup parent = (ViewGroup) getListView().getParent();
-        ViewStub viewStub = new ViewStub(getActivity(), R.layout.empty_book_list_db_empty);
-        viewStub.setInflatedId(R.id.empty_view_stub);
-        parent.addView(viewStub);
-        View v = viewStub.inflate();
-
-        TextView emptyListTextView = (TextView) v.findViewById(R.id.empty_book_list_TextView);
-        if (emptyListTextView != null) {
-            emptyListTextView.setText(getString(stringId));
-        }
-    }*/
 
     private String getIsbnAtIndex(Cursor cursor, int index) {
         if (cursor == null || !cursor.moveToPosition(index)) {
@@ -177,63 +136,6 @@ public class BookListFragment extends ListFragment
         }
         return cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
     }
-
-    /*void updateEmptyView(Cursor data) {
-        // No data
-        if (!data.moveToFirst()) {
-
-            // Get fetch result from Preferences
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String fetchResultKey = getString(R.string.pref_fetch_result);
-
-            if (!sp.contains(fetchResultKey)) {
-                // Internet not available
-                if (!Utility.isInternetAvailable(getActivity())) {
-                    mEmptyView = createViewForEmptyList(true, false);
-                    if (mEmptyView != null) {
-                        getListView().setEmptyView(mEmptyView);
-                    }
-                }
-                // No books records in database
-                else {
-                    mEmptyView = createViewForEmptyList(false, true);
-                    if (mEmptyView != null) {
-                        getListView().setEmptyView(mEmptyView);
-                    }
-                }
-                return;
-            }
-
-            @BookService.FetchResult int result = sp.getInt(fetchResultKey,
-                    BookService.FETCH_RESULT_UNKNOWN);
-            String message;
-
-            switch (result) {
-                case BookService.FETCH_RESULT_ADDED_TO_DB:
-                    message = getString(R.string.fetch_result_added_to_db);
-                    break;
-                case BookService.FETCH_RESULT_ALREADY_IN_DB:
-                    message = getString(R.string.fetch_result_already_in_db);
-                    break;
-                case BookService.FETCH_RESULT_NOT_FOUND:
-                    message = getString(R.string.fetch_result_not_found);
-                    break;
-                case BookService.FETCH_RESULT_SERVER_ERROR:
-                    message = getString(R.string.fetch_result_server_error);
-                    break;
-                case BookService.FETCH_RESULT_SERVER_DOWN:
-                    message = getString(R.string.fetch_result_server_down);
-                    break;
-                case BookService.FETCH_RESULT_INTERNET_DOWN:
-                    message = getString(R.string.fetch_result_internet_down);
-                    break;
-                default:
-                    message = getString(R.string.fetch_result_unknown);
-            }
-
-            mEmptyView = createViewForEmptyList(false, true);
-        }
-    }*/
 
     // Find a way to refresh the empty view
     public void reloadList() {
@@ -271,25 +173,6 @@ public class BookListFragment extends ListFragment
                 mEmptyListImageView.setBackgroundResource(R.drawable.server_issue);
             }
         }
-
-        //updateEmptyView(data);
-
-        // If the app was just started, the adapter is not set
-        /*if (mBookListAdapter == null) {
-            mBookListAdapter = new BookListAdapter(getActivity(), data, 0);
-            setListAdapter(mBookListAdapter);
-
-            if (mEmptyView != null) {
-                getListView().setEmptyView(mEmptyView);
-            }
-            // Only call this if we are in a 2-pane layout
-            setSelectedBookRunnable();
-        }*/
-
-        // Just load the new data into the books list
-        //else {
-            mBookListAdapter.swapCursor(data);
-        //}
 
         mCallbacks.onBookListLoadFinished(mBookListAdapter.getCount());
 
@@ -495,91 +378,5 @@ public class BookListFragment extends ListFragment
         shareUrlIntent.setType("text/plain");
         startActivity(shareUrlIntent);
     }
-
-    // View displayed when the list view is empty
-    // http://stackoverflow.com/questions/14082303/setemptyview-with-custom-listlayout-in-listfragment#15990955
-    // http://cyrilmottier.com/2011/06/20/listview-tips-tricks-1-handle-emptiness/
-    /*private ViewStub createViewForEmptyList(boolean bNetworkOff, boolean bNoBooksInDb) {
-        ViewStub viewStub = new ViewStub(getActivity());
-
-        // Make sure you import android.widget.LinearLayout.LayoutParams;
-        viewStub.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        viewStub.setVisibility(View.GONE);
-
-        if (bNetworkOff) {
-            viewStub.setLayoutResource(R.layout.empty_book_list);
-        }
-
-        else {
-            viewStub.setLayoutResource(R.layout.empty_book_list_db_empty);
-        }
-
-        // Add empty view to the list view
-        ((ViewGroup) getListView().getParent()).addView(viewStub);
-
-        return viewStub;
-    }*/
-
-   /* void test() {
-        ViewGroup parent = (ViewGroup) getListView().getParent();
-        ViewStub viewStub = new ViewStub(getActivity(), R.layout.empty_book_list_db_empty);
-        viewStub.setInflatedId(R.id.empty_view_stub);
-        parent.addView(viewStub);
-        View v = viewStub.inflate();
-
-        TextView emptyListTextView = (TextView) v.findViewById(R.id.empty_book_list_TextView);
-        if (emptyListTextView != null) {
-            emptyListTextView.setText("Cool, it works!");
-        }
-    }*/
-
-    /*private @StringRes int getFetchResultMessage(@BookService.FetchResult int result) {
-        String message = "";
-
-        switch (result) {
-
-            // Things went well, so there is no error message to return
-
-            case BookService.FETCH_RESULT_ADDED_TO_DB:
-                break;
-
-            case BookService.FETCH_RESULT_ALREADY_IN_DB:
-                break;
-
-            // Something went wrong, so we must return an error message
-
-            case BookService.FETCH_RESULT_NOT_FOUND:
-                return R.string.fetch_result_not_found);
-                break;
-            case BookService.FETCH_RESULT_SERVER_ERROR:
-                return R.string.fetch_result_server_error;
-
-            case BookService.FETCH_RESULT_SERVER_DOWN:
-                return R.string.fetch_result_server_down;
-
-            case BookService.FETCH_RESULT_INTERNET_DOWN:
-                return R.string.fetch_result_internet_down;
-
-            default:
-                return R.string.fetch_result_unknown;
-        }
-        //Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-        return message;
-    }*/
-
-    /*private void setEmptyListView(@StringRes int stringId) {
-        ViewGroup parent = (ViewGroup) getListView().getParent();
-        ViewStub viewStub = new ViewStub(getActivity(), R.layout.empty_book_list_db_empty);
-        viewStub.setInflatedId(R.id.empty_view_stub);
-        parent.addView(viewStub);
-        View v = viewStub.inflate();
-
-        TextView emptyListTextView = (TextView) v.findViewById(R.id.empty_book_list_TextView);
-        if (emptyListTextView != null) {
-            emptyListTextView.setText(getString(stringId));
-        }
-    }*/
 }
 

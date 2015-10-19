@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Alexandria</string>
     <string name="title_book_detail">Book Detail</string>
+    <string name="book_list_Share_FAB_contentDesc">Share book</string>
 
     <!-- Book list view -->
     <string name="book_list_empty">No books to display</string>
@@ -18,11 +19,15 @@
 
     <!-- Add book screen -->
     <string name="add_book_title">Add Book</string>
-    <string name="internet_not_available">Internet offline, book search disabled</string>
+    <string name="clear_isbn_imageButton_contentDesc">Clear ISBN</string>
+    <string name="scan_isbn_imageButton_contentDesc">Scan book</string>
+    <string name="isbn_editText_contentDesc">Search book by 13-digit ISBN</string>
+    <string name="isbn_editText_hint">13-digit ISBN</string>
 
     <!-- Book detail screen -->
     <string name="book_detail_ShareButton">Share</string>
     <string name="book_not_selected">You must first select a book from the list</string>
+    <string name="book_detail_DeleteButton_contentDesc">Delete book</string>
 
     <!-- Delete Book dialog -->
     <string name="deletion_message">Are you sure?</string>

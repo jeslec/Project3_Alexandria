@@ -4,10 +4,10 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
 
-      <item android:id="@+id/menu_add_book"
-            android:title="@string/action_add_book"
-            app:showAsAction="ifRoom"
-            android:icon="@android:drawable/ic_menu_add"/>
+    <item android:id="@+id/menu_add_book"
+        android:title="@string/action_add_book"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_add"/>
 
     <item android:id="@+id/menu_delete_book"
           android:title="@string/action_delete_book"
@@ -19,8 +19,9 @@
           app:showAsAction="never"
           android:icon="@android:drawable/ic_menu_info_details"/>
 
-      <item android:id="@+id/menu_settings"
-          android:title="@string/action_settings"
-          android:orderInCategory="100"
-          app:showAsAction="never"/>
+    <item android:id="@+id/menu_settings"
+      android:title="@string/action_settings"
+      android:orderInCategory="100"
+      app:showAsAction="never"/>
+
 </menu>

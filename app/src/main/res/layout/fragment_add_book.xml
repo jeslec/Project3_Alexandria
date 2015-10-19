@@ -26,7 +26,9 @@
                 android:inputType="number"
                 android:ems="10"
                 android:maxLength="13"
-                android:background="#ffffff"/>
+                android:background="#ffffff"
+                android:contentDescription="@string/isbn_editText_contentDesc"
+                android:hint="@string/isbn_editText_hint"/>
 
             <!-- Clear search box button -->
             <ImageButton
@@ -34,7 +36,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/clear_isbn_imageButton"
                 android:background="@android:drawable/ic_delete"
-                android:layout_marginLeft="@dimen/dialog_clear_button_left_margin"/>
+                android:layout_marginLeft="@dimen/dialog_clear_button_left_margin"
+                android:contentDescription="@string/clear_isbn_imageButton_contentDesc"/>
 
             <!-- Start ISBN scanning button -->
             <ImageButton
@@ -42,7 +45,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/scan_isbn_imageButton"
                 android:background="@android:drawable/ic_menu_camera"
-                android:layout_marginLeft="@dimen/dialog_scan_button_left_margin"/>
+                android:layout_marginLeft="@dimen/dialog_scan_button_left_margin"
+                android:contentDescription="@string/scan_isbn_imageButton_contentDesc"/>
 
         </LinearLayout>
 
@@ -90,7 +94,8 @@
                 <ImageView
                     android:id="@+id/book_image"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:contentDescription="@null"/>
             </LinearLayout>
 
             <!-- Right section: 50% of width -->
