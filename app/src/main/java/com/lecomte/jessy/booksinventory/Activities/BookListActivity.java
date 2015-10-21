@@ -298,13 +298,7 @@ public class BookListActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.menu_settings) {
-            Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
-        else if (id == R.id.menu_add_book) {
+        if (id == R.id.menu_add_book) {
             loadAddBookView();
             return true;
         }

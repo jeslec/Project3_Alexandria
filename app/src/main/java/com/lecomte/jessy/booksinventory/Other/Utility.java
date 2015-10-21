@@ -113,24 +113,10 @@ public class Utility {
             return;
         }
 
-        if (url != null && view != null) {
-            Glide.with(context)
-                    .load(url)
-                    // If image can't be downloaded, set a default image
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            Glide.with(context).load(R.drawable.no_image).into(view);
-                            return true;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            return false;
-                        }
-                    })
-                    .into(view);
-        }
+        Glide.with(context)
+                .load(url)
+                .error(R.drawable.no_image)
+                .into(view);
     }
 
     // Delete the fetch_status key in the preferences so onSharedPreferenceChanged()

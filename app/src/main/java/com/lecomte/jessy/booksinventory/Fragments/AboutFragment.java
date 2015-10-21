@@ -17,6 +17,7 @@ import android.view.WindowManager;
 
 import com.lecomte.jessy.booksinventory.Activities.BookListActivity;
 import com.lecomte.jessy.booksinventory.BuildConfig;
+import com.lecomte.jessy.booksinventory.Other.Utility;
 import com.lecomte.jessy.booksinventory.R;
 
 /**
@@ -48,24 +49,7 @@ public class AboutFragment extends DialogFragment {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
-        Bundle fragmentArguments = getArguments();
-        Intent intent = getActivity().getIntent();
-
-        // Get arguments attached to this fragment (if any)
-        if (fragmentArguments != null) {
-            mTwoPaneLayout = fragmentArguments.getBoolean(BookListActivity.EXTRA_BOOL_2PANE);
-            Log.d(TAG, "onCreate() - Intent arguments received [2-pane layout: " + mTwoPaneLayout + "]");
-        } else if (intent != null) {
-            mTwoPaneLayout = intent.getBooleanExtra(BookListActivity.EXTRA_BOOL_2PANE, false);
-            Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
-        }
-
-        //Log.d(TAG, "onCreate() - Intent extra received [2-pane layout: " + mTwoPaneLayout + "]");
-        // Maintain states between configuration changes (phone rotations, etc.)
-        //setRetainInstance(true);
-
-        // Required to get action bar back button to do something useful (go back to previous view)
-        //setHasOptionsMenu(true);
+        mTwoPaneLayout = Utility.isTwoPaneLayout(getActivity());
 
         // Make the dialog modal so it does not accept input outside the dialog area
         // http://stackoverflow.com/questions/12322356/how-to-make-dialogfragment-modal
